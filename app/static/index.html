@@ -1,0 +1,406 @@
+<title>Reconcile → Recover</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    color-scheme: light;
+    --surface-1:      #fcfcfb;
+    --page:           #f9f9f7;
+    --text-primary:   #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted:     #898781;
+    --gridline:       #e1e0d9;
+    --border:         rgba(11,11,11,0.10);
+    --good:           #0ca30c;
+    --warning:        #fab219;
+    --serious:        #ec835a;
+    --critical:       #d03b3b;
+    --success-text:   #006300;
+    --series-blue:    #2a78d6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --surface-1:      #1a1a19;
+      --page:           #0d0d0d;
+      --text-primary:   #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted:     #898781;
+      --gridline:       #2c2c2a;
+      --border:         rgba(255,255,255,0.10);
+      --good:           #0ca30c;
+      --warning:        #fab219;
+      --serious:        #ec835a;
+      --critical:       #e66767;
+      --success-text:   #0ca30c;
+      --series-blue:    #3987e5;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--text-primary);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    padding: 24px;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  h1 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+  }
+  .sub {
+    color: var(--text-secondary);
+    font-size: 13px;
+    margin-top: 2px;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--surface-1);
+  }
+  .badge .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+  .badge.live .dot { background: var(--good); }
+  .badge.mock .dot { background: var(--warning); }
+
+  .actions {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  button {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface-1);
+    color: var(--text-primary);
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--series-blue); }
+  button:disabled { opacity: 0.5; cursor: default; }
+  button.primary {
+    background: var(--series-blue);
+    color: #fff;
+    border-color: var(--series-blue);
+  }
+  #status-line {
+    font-size: 12px;
+    color: var(--text-secondary);
+    align-self: center;
+  }
+
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .tile {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .tile .label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .tile .icon {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex: none;
+  }
+  .tile .value {
+    font-size: 28px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .tile .value.good { color: var(--success-text); }
+  .tile .value.warning { color: var(--serious); }
+  .tile .value.muted { color: var(--text-primary); }
+
+  .headline-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .headline {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .headline .label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+  .headline .value {
+    font-size: 34px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .headline .note {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  section.panel {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  section.panel h2 {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--gridline);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  thead th {
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-secondary);
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--gridline);
+    position: sticky;
+    top: 0;
+    background: var(--surface-1);
+  }
+  tbody td {
+    padding: 7px 16px;
+    border-bottom: 1px solid var(--gridline);
+    vertical-align: top;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.ts, td.actor {
+    color: var(--text-muted);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  td.detail {
+    color: var(--text-secondary);
+    max-width: 420px;
+    overflow-wrap: anywhere;
+  }
+  .event-tag {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--gridline);
+  }
+  .audit-scroll {
+    max-height: 420px;
+    overflow-y: auto;
+  }
+  .empty {
+    padding: 24px 16px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+</style>
+
+<body>
+  <header>
+    <div>
+      <h1>Reconcile → Recover</h1>
+      <div class="sub">Ledger reconciliation + automated recovery, live over RazorpayX test mode</div>
+    </div>
+    <span id="integration-badge" class="badge mock"><span class="dot"></span><span id="integration-label">checking…</span></span>
+  </header>
+
+  <div class="actions">
+    <button class="primary" id="btn-reconcile">Run reconcile</button>
+    <button id="btn-route">Run route</button>
+    <button id="btn-refresh">Refresh</button>
+    <span id="status-line"></span>
+  </div>
+
+  <div class="kpi-row">
+    <div class="tile">
+      <div class="label"><span class="icon" style="background:var(--series-blue)"></span>Ingested</div>
+      <div class="value muted" id="kpi-ingested">–</div>
+    </div>
+    <div class="tile">
+      <div class="label"><span class="icon" style="background:var(--good)"></span>Matched</div>
+      <div class="value good" id="kpi-matched">–</div>
+    </div>
+    <div class="tile">
+      <div class="label"><span class="icon" style="background:var(--serious)"></span>Exceptions (open)</div>
+      <div class="value warning" id="kpi-exceptions">–</div>
+    </div>
+    <div class="tile">
+      <div class="label"><span class="icon" style="background:var(--good)"></span>Recovered</div>
+      <div class="value good" id="kpi-recovered">–</div>
+    </div>
+    <div class="tile">
+      <div class="label"><span class="icon" style="background:var(--text-muted)"></span>Gateway-side anomalies</div>
+      <div class="value muted" id="kpi-anomalies">–</div>
+    </div>
+  </div>
+
+  <div class="headline-row">
+    <div class="headline">
+      <div class="label">Match rate</div>
+      <div class="value" id="headline-match-rate">–</div>
+      <div class="note">matched ÷ ingested</div>
+    </div>
+    <div class="headline">
+      <div class="label">Amount recovered</div>
+      <div class="value" id="headline-amount-recovered">–</div>
+      <div class="note">sum of resolved ledger-side exceptions</div>
+    </div>
+  </div>
+
+  <section class="panel">
+    <h2>Audit log — most recent first</h2>
+    <div class="audit-scroll">
+      <table>
+        <thead>
+          <tr><th>Time</th><th>Actor</th><th>Event</th><th>Subject</th><th>Detail</th></tr>
+        </thead>
+        <tbody id="audit-body"></tbody>
+      </table>
+      <div class="empty" id="audit-empty" style="display:none">No audit entries yet — run reconcile to generate some.</div>
+    </div>
+  </section>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    function fmtPaise(paise) {
+      return "₹" + (paise / 100).toLocaleString("en-IN", { maximumFractionDigits: 2 });
+    }
+
+    function fmtPct(rate) {
+      return rate === null || rate === undefined ? "–" : (rate * 100).toFixed(1) + "%";
+    }
+
+    function fmtTs(ts) {
+      if (!ts) return "";
+      // sqlite CURRENT_TIMESTAMP is "YYYY-MM-DD HH:MM:SS" UTC
+      const d = new Date(ts.replace(" ", "T") + "Z");
+      if (isNaN(d.getTime())) return ts;
+      return d.toLocaleString(undefined, {
+        month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit"
+      });
+    }
+
+    async function loadIntegrationStatus() {
+      const r = await fetch("/integration/status");
+      const data = await r.json();
+      const badge = $("integration-badge");
+      const label = $("integration-label");
+      if (data.executor === "live") {
+        badge.className = "badge live";
+        label.textContent = "live executor";
+      } else {
+        badge.className = "badge mock";
+        label.textContent = "mock executor";
+      }
+      badge.title = `key configured: ${data.key_configured} · account: ${data.account_number_configured} · webhook secret: ${data.webhook_secret_configured} · fund accounts mapped: ${data.fund_accounts_mapped}`;
+    }
+
+    async function loadFunnel() {
+      const r = await fetch("/funnel");
+      const f = await r.json();
+      $("kpi-ingested").textContent = f.ingested;
+      $("kpi-matched").textContent = f.matched;
+      $("kpi-exceptions").textContent = f.exceptions;
+      $("kpi-recovered").textContent = f.recovered;
+      $("kpi-anomalies").textContent = f.gateway_side_anomalies;
+      $("headline-match-rate").textContent = fmtPct(f.match_rate);
+      $("headline-amount-recovered").textContent = fmtPaise(f.amount_recovered_paise);
+    }
+
+    async function loadAudit() {
+      const r = await fetch("/audit?limit=200");
+      const data = await r.json();
+      const body = $("audit-body");
+      const empty = $("audit-empty");
+      body.innerHTML = "";
+      if (!data.entries.length) {
+        empty.style.display = "block";
+        return;
+      }
+      empty.style.display = "none";
+      for (const e of data.entries) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="ts">${fmtTs(e.ts)}</td>
+          <td class="actor">${e.actor}</td>
+          <td><span class="event-tag">${e.event}</span></td>
+          <td class="actor">${e.subject_type}:${e.subject_id}</td>
+          <td class="detail">${e.detail || ""}</td>
+        `;
+        body.appendChild(tr);
+      }
+    }
+
+    async function refreshAll() {
+      await Promise.all([loadIntegrationStatus(), loadFunnel(), loadAudit()]);
+    }
+
+    async function runAction(btn, path, method = "POST") {
+      const buttons = document.querySelectorAll("button");
+      buttons.forEach((b) => (b.disabled = true));
+      $("status-line").textContent = "working…";
+      try {
+        const r = await fetch(path, { method });
+        const data = await r.json();
+        $("status-line").textContent = `${path} → ${JSON.stringify(data)}`.slice(0, 140);
+        await refreshAll();
+      } catch (err) {
+        $("status-line").textContent = `${path} failed: ${err}`;
+      } finally {
+        buttons.forEach((b) => (b.disabled = false));
+      }
+    }
+
+    $("btn-reconcile").addEventListener("click", () => runAction($("btn-reconcile"), "/pipeline/reconcile"));
+    $("btn-route").addEventListener("click", () => runAction($("btn-route"), "/pipeline/route"));
+    $("btn-refresh").addEventListener("click", refreshAll);
+
+    refreshAll();
+    setInterval(refreshAll, 15000);
+  </script>
+</body>

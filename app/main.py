@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from typing import Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from app import config
@@ -139,3 +140,9 @@ async def razorpayx_webhook(request: Request, conn: sqlite3.Connection = Depends
         return handle_webhook(conn, payload)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+# Dashboard UI. Mounted last, after every explicit API route above, so those
+# routes always match first -- this mount is purely a catch-all serving
+# app/static/index.html at "/" and any other static assets under it.
+app.mount("/", StaticFiles(directory="app/static", html=True), name="dashboard")
