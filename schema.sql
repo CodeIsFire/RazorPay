@@ -81,3 +81,33 @@ CREATE TABLE IF NOT EXISTS exceptions (
 
 CREATE INDEX IF NOT EXISTS idx_exceptions_cause ON exceptions (cause);
 CREATE INDEX IF NOT EXISTS idx_exceptions_status ON exceptions (status);
+
+-- One row per attempt, not per exception -- a retried payout gets a new
+-- row each attempt, all sharing exception_key so the full retry history
+-- is visible. `idempotency_key` is what becomes the RazorpayX payout's
+-- reference_id at M6: derived from exception_key + attempt_number, so a
+-- retried attempt can never collide with a previous one, and any attempt
+-- can be traced back to the exception that caused it.
+CREATE TABLE IF NOT EXISTS actions (
+    id                INTEGER PRIMARY KEY AUTOINCREMENT,
+    exception_key     TEXT NOT NULL REFERENCES exceptions(exception_key),
+    attempt_number    INTEGER NOT NULL,
+    action_type       TEXT NOT NULL CHECK (
+                          action_type IN ('retry_payout', 'draft_dispute_note',
+                                          'send_reminder', 'flag_for_review')
+                      ),
+    idempotency_key   TEXT NOT NULL UNIQUE,
+    -- 'processing'/'processed'/'reversed' only ever apply to retry_payout,
+    -- and only the confirm step (mocked now, a real webhook at M6) may set
+    -- processed/reversed -- dispatch alone only ever produces 'processing'.
+    status            TEXT NOT NULL DEFAULT 'dispatched' CHECK (
+                          status IN ('dispatched', 'processing', 'processed',
+                                     'reversed', 'completed')
+                      ),
+    gateway_payout_id TEXT,
+    detail            TEXT,
+    created_at        TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at        TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_actions_exception_key ON actions (exception_key);
