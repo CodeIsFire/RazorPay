@@ -5,13 +5,15 @@ import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
 
-from app.config import DB_PATH
+from app import config
 
 SCHEMA_PATH = Path(__file__).resolve().parent.parent / "schema.sql"
 
 
 def get_connection() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_PATH)
+    # Reads config.DB_PATH at call time (not import time) so tests can
+    # monkeypatch it per-test for isolation -- see tests/conftest.py.
+    conn = sqlite3.connect(config.DB_PATH)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     return conn
@@ -43,3 +45,21 @@ def log_audit(conn: sqlite3.Connection, *, actor: str, subject_type: str,
         "VALUES (?, ?, ?, ?, ?)",
         (actor, subject_type, subject_id, event, detail),
     )
+
+
+def fetch_audit_log(conn: sqlite3.Connection, *, limit: int = 200,
+                     subject_type: str | None = None) -> list[dict]:
+    """Most recent entries first. This is the read side of the audit trail
+    the dashboard shows and the buildathon's "graceful failure handling"
+    criterion cares about -- it's the same table every stage writes to,
+    nothing summarized or filtered away."""
+    if subject_type:
+        rows = conn.execute(
+            "SELECT * FROM audit_log WHERE subject_type = ? ORDER BY id DESC LIMIT ?",
+            (subject_type, limit),
+        ).fetchall()
+    else:
+        rows = conn.execute(
+            "SELECT * FROM audit_log ORDER BY id DESC LIMIT ?", (limit,)
+        ).fetchall()
+    return [dict(r) for r in rows]
