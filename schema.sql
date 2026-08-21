@@ -12,6 +12,11 @@ CREATE TABLE IF NOT EXISTS transactions (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     source          TEXT NOT NULL CHECK (source IN ('ledger', 'gateway')),
     external_ref    TEXT NOT NULL,          -- ledger order id, or RazorpayX payout/transaction id
+    reference_id    TEXT,                   -- shared correlation key: on ledger rows, their own id;
+                                             -- on gateway rows, the ledger id we asked RazorpayX to
+                                             -- echo back (payouts support a reference_id field).
+                                             -- Absent when a payout was created without one, forcing
+                                             -- the matcher's fuzzy fallback.
     amount_paise    INTEGER NOT NULL,
     currency        TEXT NOT NULL DEFAULT 'INR',
     counterparty    TEXT,                   -- contact/fund account name or id, if known
@@ -23,6 +28,9 @@ CREATE TABLE IF NOT EXISTS transactions (
 
 CREATE INDEX IF NOT EXISTS idx_transactions_source_ref
     ON transactions (source, external_ref);
+
+CREATE INDEX IF NOT EXISTS idx_transactions_reference_id
+    ON transactions (reference_id);
 
 CREATE INDEX IF NOT EXISTS idx_transactions_amount
     ON transactions (amount_paise);

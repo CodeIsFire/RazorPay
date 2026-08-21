@@ -1,0 +1,222 @@
+[
+  {
+    "source": "ledger",
+    "external_ref": "LED-0001",
+    "reference_id": "LED-0001",
+    "amount_paise": 4290500,
+    "currency": "INR",
+    "counterparty": "Acme Traders",
+    "narration": "Payout to Acme Traders",
+    "occurred_at": "2026-08-10T09:00:00+00:00",
+    "raw_json": "{\"kind\": \"ledger_entry\", \"order_id\": \"LED-0001\", \"vendor\": \"Acme Traders\", \"expected_amount_inr\": 42905}"
+  },
+  {
+    "source": "ledger",
+    "external_ref": "LED-0002",
+    "reference_id": "LED-0002",
+    "amount_paise": 1544600,
+    "currency": "INR",
+    "counterparty": "Bharat Logistics",
+    "narration": "Payout to Bharat Logistics",
+    "occurred_at": "2026-08-10T11:00:00+00:00",
+    "raw_json": "{\"kind\": \"ledger_entry\", \"order_id\": \"LED-0002\", \"vendor\": \"Bharat Logistics\", \"expected_amount_inr\": 15446}"
+  },
+  {
+    "source": "ledger",
+    "external_ref": "LED-0003",
+    "reference_id": "LED-0003",
+    "amount_paise": 2580700,
+    "currency": "INR",
+    "counterparty": "Crimson Supplies",
+    "narration": "Payout to Crimson Supplies",
+    "occurred_at": "2026-08-10T16:00:00+00:00",
+    "raw_json": "{\"kind\": \"ledger_entry\", \"order_id\": \"LED-0003\", \"vendor\": \"Crimson Supplies\", \"expected_amount_inr\": 25807}"
+  },
+  {
+    "source": "ledger",
+    "external_ref": "LED-0004",
+    "reference_id": "LED-0004",
+    "amount_paise": 4492000,
+    "currency": "INR",
+    "counterparty": "Delta Freight",
+    "narration": "Payout to Delta Freight",
+    "occurred_at": "2026-08-10T18:00:00+00:00",
+    "raw_json": "{\"kind\": \"ledger_entry\", \"order_id\": \"LED-0004\", \"vendor\": \"Delta Freight\", \"expected_amount_inr\": 44920}"
+  },
+  {
+    "source": "ledger",
+    "external_ref": "LED-0005",
+    "reference_id": "LED-0005",
+    "amount_paise": 4804900,
+    "currency": "INR",
+    "counterparty": "Everest Textiles",
+    "narration": "Payout to Everest Textiles",
+    "occurred_at": "2026-08-10T22:00:00+00:00",
+    "raw_json": "{\"kind\": \"ledger_entry\", \"order_id\": \"LED-0005\", \"vendor\": \"Everest Textiles\", \"expected_amount_inr\": 48049}"
+  },
+  {
+    "source": "ledger",
+    "external_ref": "LED-0006",
+    "reference_id": "LED-0006",
+    "amount_paise": 818500,
+    "currency": "INR",
+    "counterparty": "Falcon Components",
+    "narration": "Payout to Falcon Components",
+    "occurred_at": "2026-08-11T02:00:00+00:00",
+    "raw_json": "{\"kind\": \"ledger_entry\", \"order_id\": \"LED-0006\", \"vendor\": \"Falcon Components\", \"expected_amount_inr\": 8185}"
+  },
+  {
+    "source": "ledger",
+    "external_ref": "LED-0007",
+    "reference_id": "LED-0007",
+    "amount_paise": 1270800,
+    "currency": "INR",
+    "counterparty": "Ganges Packaging",
+    "narration": "Payout to Ganges Packaging",
+    "occurred_at": "2026-08-11T05:00:00+00:00",
+    "raw_json": "{\"kind\": \"ledger_entry\", \"order_id\": \"LED-0007\", \"vendor\": \"Ganges Packaging\", \"expected_amount_inr\": 12708}"
+  },
+  {
+    "source": "ledger",
+    "external_ref": "LED-0008",
+    "reference_id": "LED-0008",
+    "amount_paise": 3818200,
+    "currency": "INR",
+    "counterparty": "Horizon Electricals",
+    "narration": "Payout to Horizon Electricals",
+    "occurred_at": "2026-08-11T11:00:00+00:00",
+    "raw_json": "{\"kind\": \"ledger_entry\", \"order_id\": \"LED-0008\", \"vendor\": \"Horizon Electricals\", \"expected_amount_inr\": 38182}"
+  },
+  {
+    "source": "ledger",
+    "external_ref": "LED-0009",
+    "reference_id": "LED-0009",
+    "amount_paise": 3058800,
+    "currency": "INR",
+    "counterparty": "Indus Hardware",
+    "narration": "Payout to Indus Hardware",
+    "occurred_at": "2026-08-11T13:00:00+00:00",
+    "raw_json": "{\"kind\": \"ledger_entry\", \"order_id\": \"LED-0009\", \"vendor\": \"Indus Hardware\", \"expected_amount_inr\": 30588}"
+  },
+  {
+    "source": "ledger",
+    "external_ref": "LED-0010",
+    "reference_id": "LED-0010",
+    "amount_paise": 4840500,
+    "currency": "INR",
+    "counterparty": "Jupiter Chemicals",
+    "narration": "Payout to Jupiter Chemicals",
+    "occurred_at": "2026-08-11T15:00:00+00:00",
+    "raw_json": "{\"kind\": \"ledger_entry\", \"order_id\": \"LED-0010\", \"vendor\": \"Jupiter Chemicals\", \"expected_amount_inr\": 48405}"
+  },
+  {
+    "source": "ledger",
+    "external_ref": "LED-0011",
+    "reference_id": "LED-0011",
+    "amount_paise": 1018600,
+    "currency": "INR",
+    "counterparty": "Konkan Foods",
+    "narration": "Payout to Konkan Foods",
+    "occurred_at": "2026-08-11T21:00:00+00:00",
+    "raw_json": "{\"kind\": \"ledger_entry\", \"order_id\": \"LED-0011\", \"vendor\": \"Konkan Foods\", \"expected_amount_inr\": 10186}"
+  },
+  {
+    "source": "ledger",
+    "external_ref": "LED-0012",
+    "reference_id": "LED-0012",
+    "amount_paise": 114100,
+    "currency": "INR",
+    "counterparty": "Lotus Stationery",
+    "narration": "Payout to Lotus Stationery",
+    "occurred_at": "2026-08-12T02:00:00+00:00",
+    "raw_json": "{\"kind\": \"ledger_entry\", \"order_id\": \"LED-0012\", \"vendor\": \"Lotus Stationery\", \"expected_amount_inr\": 1141}"
+  },
+  {
+    "source": "ledger",
+    "external_ref": "LED-0013",
+    "reference_id": "LED-0013",
+    "amount_paise": 3395400,
+    "currency": "INR",
+    "counterparty": "Malabar Spices",
+    "narration": "Payout to Malabar Spices",
+    "occurred_at": "2026-08-12T07:00:00+00:00",
+    "raw_json": "{\"kind\": \"ledger_entry\", \"order_id\": \"LED-0013\", \"vendor\": \"Malabar Spices\", \"expected_amount_inr\": 33954}"
+  },
+  {
+    "source": "ledger",
+    "external_ref": "LED-0014",
+    "reference_id": "LED-0014",
+    "amount_paise": 1438600,
+    "currency": "INR",
+    "counterparty": "Nilgiri Tea Co",
+    "narration": "Payout to Nilgiri Tea Co",
+    "occurred_at": "2026-08-12T13:00:00+00:00",
+    "raw_json": "{\"kind\": \"ledger_entry\", \"order_id\": \"LED-0014\", \"vendor\": \"Nilgiri Tea Co\", \"expected_amount_inr\": 14386}"
+  },
+  {
+    "source": "ledger",
+    "external_ref": "LED-0015",
+    "reference_id": "LED-0015",
+    "amount_paise": 4802900,
+    "currency": "INR",
+    "counterparty": "Orion Fabrics",
+    "narration": "Payout to Orion Fabrics",
+    "occurred_at": "2026-08-12T17:00:00+00:00",
+    "raw_json": "{\"kind\": \"ledger_entry\", \"order_id\": \"LED-0015\", \"vendor\": \"Orion Fabrics\", \"expected_amount_inr\": 48029}"
+  },
+  {
+    "source": "ledger",
+    "external_ref": "LED-0016",
+    "reference_id": "LED-0016",
+    "amount_paise": 4167500,
+    "currency": "INR",
+    "counterparty": "Pallavi Prints",
+    "narration": "Payout to Pallavi Prints",
+    "occurred_at": "2026-08-12T21:00:00+00:00",
+    "raw_json": "{\"kind\": \"ledger_entry\", \"order_id\": \"LED-0016\", \"vendor\": \"Pallavi Prints\", \"expected_amount_inr\": 41675}"
+  },
+  {
+    "source": "ledger",
+    "external_ref": "LED-0017",
+    "reference_id": "LED-0017",
+    "amount_paise": 2100000,
+    "currency": "INR",
+    "counterparty": "Quartz Metals",
+    "narration": "Payout to Quartz Metals",
+    "occurred_at": "2026-08-13T00:00:00+00:00",
+    "raw_json": "{\"kind\": \"ledger_entry\", \"order_id\": \"LED-0017\", \"vendor\": \"Quartz Metals\", \"expected_amount_inr\": 21000}"
+  },
+  {
+    "source": "ledger",
+    "external_ref": "LED-0018",
+    "reference_id": "LED-0018",
+    "amount_paise": 2365400,
+    "currency": "INR",
+    "counterparty": "Ridgeline Tools",
+    "narration": "Payout to Ridgeline Tools",
+    "occurred_at": "2026-08-13T03:00:00+00:00",
+    "raw_json": "{\"kind\": \"ledger_entry\", \"order_id\": \"LED-0018\", \"vendor\": \"Ridgeline Tools\", \"expected_amount_inr\": 23654}"
+  },
+  {
+    "source": "ledger",
+    "external_ref": "LED-0019",
+    "reference_id": "LED-0019",
+    "amount_paise": 2959900,
+    "currency": "INR",
+    "counterparty": "Sundar Furnishings",
+    "narration": "Payout to Sundar Furnishings",
+    "occurred_at": "2026-08-13T07:00:00+00:00",
+    "raw_json": "{\"kind\": \"ledger_entry\", \"order_id\": \"LED-0019\", \"vendor\": \"Sundar Furnishings\", \"expected_amount_inr\": 29599}"
+  },
+  {
+    "source": "ledger",
+    "external_ref": "LED-0020",
+    "reference_id": "LED-0020",
+    "amount_paise": 3451600,
+    "currency": "INR",
+    "counterparty": "Tricolor Paints",
+    "narration": "Payout to Tricolor Paints",
+    "occurred_at": "2026-08-13T13:00:00+00:00",
+    "raw_json": "{\"kind\": \"ledger_entry\", \"order_id\": \"LED-0020\", \"vendor\": \"Tricolor Paints\", \"expected_amount_inr\": 34516}"
+  }
+]
