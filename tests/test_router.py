@@ -110,6 +110,60 @@ def test_duplicate_and_unexplained_are_flagged_not_acted_on():
 
 
 # ---------------------------------------------------------------------------
+# Executor failures (network error, live executor misconfiguration, ...)
+# must not crash the batch or count as a "chose not to" bound hit.
+# ---------------------------------------------------------------------------
+
+class _FailingExecutor:
+    def create_payout(self, **kwargs):
+        raise RuntimeError("simulated network failure")
+
+
+def test_executor_failure_is_reported_as_error_not_dispatched_or_abandoned():
+    conn = _fresh_db()
+    key = "failed_payment:LED-8:-"
+    _insert_exception(conn, key=key, cause="failed_payment", ledger_ref="LED-8")
+    row = _fetch_row_with_age(conn, key)
+
+    result = route_exception(conn, row, _FailingExecutor())
+    assert result["decision"] == "error"
+
+    # No attempt was actually made: no actions row, retry_count untouched,
+    # exception stays open (not abandoned -- this wasn't a bound hit).
+    assert conn.execute("SELECT COUNT(*) FROM actions WHERE exception_key=?",
+                         (key,)).fetchone()[0] == 0
+    exc = conn.execute("SELECT * FROM exceptions WHERE exception_key=?", (key,)).fetchone()
+    assert exc["status"] == "open"
+    assert exc["retry_count"] == 0
+
+    audit = conn.execute(
+        "SELECT * FROM audit_log WHERE event='action_dispatch_failed' AND subject_id=?", (key,)
+    ).fetchone()
+    assert audit is not None
+    assert "simulated network failure" in audit["detail"]
+
+
+def test_route_open_exceptions_summary_includes_error_count():
+    conn = _fresh_db()
+    _insert_exception(conn, key="failed_payment:LED-9:-", cause="failed_payment", ledger_ref="LED-9")
+    summary = route_open_exceptions(conn, executor=_FailingExecutor())
+    assert summary == {"dispatched": 0, "abandoned": 0, "skipped": 0, "error": 1}
+
+
+def test_live_executor_raises_clear_error_when_fund_account_not_configured():
+    from app.live_executor import RazorpayXPayoutExecutor
+
+    executor = RazorpayXPayoutExecutor(fund_account_map={})  # nothing configured
+    try:
+        executor.create_payout(idempotency_key="k", amount_paise=1000,
+                                counterparty="LED-0018", purpose="failed_payment_retry")
+        assert False, "expected a ValueError"
+    except ValueError as e:
+        assert "LED-0018" in str(e)
+        assert "fund_account_id" in str(e)
+
+
+# ---------------------------------------------------------------------------
 # Confirmation (mock stand-in for the M6 webhook)
 # ---------------------------------------------------------------------------
 
@@ -242,7 +296,7 @@ def test_route_open_exceptions_dispatches_one_action_per_exception_on_first_pass
     classify_and_persist_from_db(conn)
 
     summary = route_open_exceptions(conn)
-    assert summary == {"dispatched": 10, "abandoned": 0, "skipped": 0}
+    assert summary == {"dispatched": 10, "abandoned": 0, "skipped": 0, "error": 0}
 
     action_types = [r["action_type"] for r in conn.execute("SELECT action_type FROM actions")]
     assert action_types.count("retry_payout") == 3       # failed_payment cases

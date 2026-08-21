@@ -13,7 +13,15 @@ SCHEMA_PATH = Path(__file__).resolve().parent.parent / "schema.sql"
 def get_connection() -> sqlite3.Connection:
     # Reads config.DB_PATH at call time (not import time) so tests can
     # monkeypatch it per-test for isolation -- see tests/conftest.py.
-    conn = sqlite3.connect(config.DB_PATH)
+    #
+    # check_same_thread=False: FastAPI runs a sync dependency (get_db) in a
+    # worker thread but an `async def` endpoint's body on the event-loop
+    # thread, so a connection created in the dependency can be handed to
+    # code running on a different thread within the same request. There's
+    # no concurrent use of one connection here -- one request, one
+    # connection, used sequentially -- so this is the standard, safe fix
+    # rather than a real concurrency hazard.
+    conn = sqlite3.connect(config.DB_PATH, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     return conn

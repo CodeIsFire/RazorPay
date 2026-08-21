@@ -17,12 +17,13 @@ fee dispute or a duplicate payout. A human closes those out; the system's
 job is to surface them clearly and stop pestering once the bounds are hit.
 
 Payout execution goes through a swappable PayoutExecutor so the mock used
-here and the real razorpay-python calls wired in at M6 present the exact
-same interface: create_payout() always returns "processing", never
-"processed" -- matching real RazorpayX behavior, where a successful API
-call only means the payout was accepted, not that money moved. Only
-confirm_action() (called by a human/test now, by the webhook handler at
-M6) may set a terminal outcome.
+here and the real RazorpayX-backed one wired in at M6 (app/live_executor.py)
+present the exact same interface. A dispatch never claims success by
+itself -- only confirm_action() (called by a human/test now, by the
+webhook handler at M6) may set a terminal outcome. If executor.create_payout()
+raises (network error, missing fund-account config, RazorpayX rejecting
+the request), that's reported as its own 'error' decision, distinct from a
+bound hit -- see the try/except below.
 """
 import sqlite3
 from typing import Protocol
@@ -91,12 +92,26 @@ def route_exception(conn: sqlite3.Connection, exception_row: dict, executor: Pay
     idempotency_key = f"{key}:attempt{attempt_number}"
 
     if action_type == "retry_payout":
-        result = executor.create_payout(
-            idempotency_key=idempotency_key,
-            amount_paise=exception_row["amount_paise"],
-            counterparty=exception_row["ledger_ref"] or "unknown",
-            purpose="failed_payment_retry",
-        )
+        try:
+            result = executor.create_payout(
+                idempotency_key=idempotency_key,
+                amount_paise=exception_row["amount_paise"],
+                counterparty=exception_row["ledger_ref"] or "unknown",
+                purpose="failed_payment_retry",
+            )
+        except Exception as e:
+            # A live executor can fail for reasons that have nothing to do
+            # with the exception itself (network, missing fund-account
+            # config, RazorpayX rejecting the request) -- one bad exception
+            # shouldn't crash the whole batch, and this attempt was never
+            # actually dispatched, so no actions row and no retry_count
+            # increment. Distinct from a bound hit: this is "couldn't try",
+            # not "chose not to".
+            log_audit(conn, actor="router", subject_type="exception", subject_id=key,
+                      event="action_dispatch_failed",
+                      detail=f"action={action_type} attempt={attempt_number} error={e}")
+            conn.commit()
+            return {"decision": "error", "detail": str(e)}
         action_status = result["status"]
         gateway_payout_id = result.get("gateway_payout_id")
     else:
@@ -137,10 +152,10 @@ def route_open_exceptions(conn: sqlite3.Connection, executor: PayoutExecutor | N
            FROM exceptions WHERE status IN ('open', 'in_progress')"""
     ).fetchall()
 
-    summary = {"dispatched": 0, "abandoned": 0, "skipped": 0}
+    summary = {"dispatched": 0, "abandoned": 0, "skipped": 0, "error": 0}
     for row in rows:
         result = route_exception(conn, dict(row), executor)
-        summary[result["decision"]] += 1
+        summary[result["decision"]] = summary.get(result["decision"], 0) + 1
     conn.commit()
     return summary
 

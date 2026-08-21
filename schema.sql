@@ -97,12 +97,14 @@ CREATE TABLE IF NOT EXISTS actions (
                                           'send_reminder', 'flag_for_review')
                       ),
     idempotency_key   TEXT NOT NULL UNIQUE,
-    -- 'processing'/'processed'/'reversed' only ever apply to retry_payout,
-    -- and only the confirm step (mocked now, a real webhook at M6) may set
-    -- processed/reversed -- dispatch alone only ever produces 'processing'.
+    -- 'queued'/'processing'/'processed'/'reversed'/'failed'/'rejected' are
+    -- RazorpayX's own payout status vocabulary, passed through verbatim
+    -- (see app/live_executor.py) rather than collapsed into our own names
+    -- -- only the confirm step (mocked now, a real webhook at M6) may set
+    -- a terminal outcome; dispatch alone never produces 'processed'.
     status            TEXT NOT NULL DEFAULT 'dispatched' CHECK (
-                          status IN ('dispatched', 'processing', 'processed',
-                                     'reversed', 'completed')
+                          status IN ('dispatched', 'queued', 'processing', 'processed',
+                                     'reversed', 'failed', 'rejected', 'completed')
                       ),
     gateway_payout_id TEXT,
     detail            TEXT,
