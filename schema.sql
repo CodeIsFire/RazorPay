@@ -52,3 +52,32 @@ CREATE TABLE IF NOT EXISTS audit_log (
 
 CREATE INDEX IF NOT EXISTS idx_audit_log_subject
     ON audit_log (subject_type, subject_id);
+
+-- One row per unmatched transaction (or unmatched pair), typed by likely
+-- cause. `exception_key` is the load-bearing field: a deterministic id
+-- derived from (cause, ledger_ref, gateway_ref) -- see app/classify.py --
+-- not a DB autoincrement. Re-running the classifier never creates a
+-- duplicate row for the same underlying situation, and M5's retry/
+-- idempotency-key convention for RazorpayX payouts is built on this same
+-- key rather than a second identifier scheme.
+CREATE TABLE IF NOT EXISTS exceptions (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    exception_key  TEXT NOT NULL UNIQUE,
+    cause          TEXT NOT NULL CHECK (
+                       cause IN ('failed_payment', 'fee_mismatch', 'duplicate',
+                                 'timing_lag', 'unexplained')
+                   ),
+    ledger_ref     TEXT,     -- transactions.external_ref where source='ledger', if any
+    gateway_ref    TEXT,     -- transactions.external_ref where source='gateway', if any
+    amount_paise   INTEGER NOT NULL,
+    detail         TEXT,
+    status         TEXT NOT NULL DEFAULT 'open' CHECK (
+                       status IN ('open', 'in_progress', 'resolved', 'abandoned')
+                   ),
+    retry_count    INTEGER NOT NULL DEFAULT 0,  -- owned by M5's action router, not written here
+    created_at     TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at     TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_exceptions_cause ON exceptions (cause);
+CREATE INDEX IF NOT EXISTS idx_exceptions_status ON exceptions (status);
