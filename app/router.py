@@ -25,6 +25,8 @@ raises (network error, missing fund-account config, RazorpayX rejecting
 the request), that's reported as its own 'error' decision, distinct from a
 bound hit -- see the try/except below.
 """
+from __future__ import annotations
+
 import sqlite3
 from typing import Protocol
 

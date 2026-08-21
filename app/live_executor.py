@@ -17,6 +17,8 @@ file. Until it's populated, this executor fails loudly and specifically
 per-exception (caught by router.route_exception, logged, no action taken)
 rather than either crashing the whole batch or silently no-op'ing.
 """
+from __future__ import annotations
+
 import json
 from pathlib import Path
 

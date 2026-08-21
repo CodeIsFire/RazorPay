@@ -28,6 +28,8 @@ notes) and is therefore verified here only against a faked HTTP layer --
 see tests/test_razorpayx_client.py. Real verification happens wherever
 this runs with an actual route to api.razorpay.com.
 """
+from __future__ import annotations
+
 import hashlib
 
 import httpx

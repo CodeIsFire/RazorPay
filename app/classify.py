@@ -31,6 +31,8 @@ for the same underlying situation -- see tests/test_classify.py), and M5's
 retry/idempotency-key convention for RazorpayX payouts derives from this
 same key instead of inventing a second identifier scheme.
 """
+from __future__ import annotations
+
 from dataclasses import dataclass
 from datetime import datetime
 import sqlite3

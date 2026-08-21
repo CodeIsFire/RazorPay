@@ -1,6 +1,8 @@
 """Thin SQLite wrapper. No ORM on purpose — the schema is small and stable
 enough that raw SQL stays readable, and it keeps the dependency list short.
 """
+from __future__ import annotations
+
 import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
