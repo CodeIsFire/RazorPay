@@ -53,7 +53,7 @@ class RazorpayXPayoutExecutor:
             amount_paise=amount_paise,
             purpose="payout",
             reference_id=idempotency_key,
-            narration="Reconcile-Recover retry",
+            narration="Reconcile Recover retry",
             queue_if_low_balance=True,
         )
         return {"gateway_payout_id": result["id"], "status": result["status"]}
