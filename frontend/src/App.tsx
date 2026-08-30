@@ -1,44 +1,64 @@
-import { useAnalyticsExceptions, useDaily, useExceptions, useFunnel } from './lib/queries'
+import { useEffect, useRef, useState } from 'react'
+import { RailNav } from '@/components/nav/RailNav'
+import { SidebarNav } from '@/components/nav/SidebarNav'
+import { TabPanel } from '@/components/TabPanel'
+import { ToastProvider } from '@/components/Toast'
+import { TopBar } from '@/components/TopBar'
+import { useActiveTab } from '@/hooks/useActiveTab'
+import { useLenis } from '@/hooks/useLenis'
+import type { TabId } from '@/lib/labels'
 
-export default function App() {
-  const funnel = useFunnel()
-  const daily = useDaily()
-  const analytics = useAnalyticsExceptions()
-  const exceptions = useExceptions()
+function TabContent({ tab }: { tab: TabId }) {
+  switch (tab) {
+    case 'overview':
+      return <p className="page-desc">Overview — porting next.</p>
+    case 'exceptions':
+      return <p className="page-desc">Needs attention — porting next.</p>
+    case 'insights':
+      return <p className="page-desc">Insights — porting next.</p>
+    case 'audit':
+      return <p className="page-desc">Activity log — porting next.</p>
+  }
+}
+
+function Dashboard() {
+  const [activeTab, selectTab] = useActiveTab()
+  const [query, setQuery] = useState('')
+  const contentRef = useRef<HTMLElement>(null)
+  const contentInnerRef = useRef<HTMLDivElement>(null)
+
+  useLenis(contentRef, contentInnerRef)
+
+  // One search box serves two different tables, so the term does not survive a
+  // tab change: carrying "failed_payment" over to the activity log would
+  // silently hide most of it with no visible cause.
+  useEffect(() => setQuery(''), [activeTab])
 
   return (
-    <div style={{ padding: 24 }}>
-      <div className="card">
-        <div className="card-head">
-          <div className="title">API client smoke test</div>
-        </div>
-        <div className="card-body">
-          <div className="kv-row">
-            <div className="k">funnel</div>
-            <div className="v" id="probe-funnel">
-              {funnel.data ? `${funnel.data.ingested} ingested / ${funnel.data.exceptions} exceptions` : String(funnel.error ?? 'loading')}
+    <>
+      <div className="brand-rule" />
+      <div className="app">
+        <RailNav activeTab={activeTab} onSelect={selectTab} />
+        <SidebarNav activeTab={activeTab} onSelect={selectTab} />
+        <div className="main">
+          <TopBar activeTab={activeTab} query={query} onQueryChange={setQuery} />
+          <main className="content" ref={contentRef}>
+            <div className="content-inner" ref={contentInnerRef}>
+              <TabPanel tab={activeTab}>
+                <TabContent tab={activeTab} />
+              </TabPanel>
             </div>
-          </div>
-          <div className="kv-row">
-            <div className="k">daily</div>
-            <div className="v" id="probe-daily">
-              {daily.data ? `${daily.data.count} days` : String(daily.error ?? 'loading')}
-            </div>
-          </div>
-          <div className="kv-row">
-            <div className="k">analytics</div>
-            <div className="v" id="probe-analytics">
-              {analytics.data ? `${analytics.data.by_cause.length} causes / risk ${analytics.data.value_at_risk_paise}` : String(analytics.error ?? 'loading')}
-            </div>
-          </div>
-          <div className="kv-row">
-            <div className="k">exceptions</div>
-            <div className="v" id="probe-exceptions">
-              {exceptions.data ? `${exceptions.data.count} rows` : String(exceptions.error ?? 'loading')}
-            </div>
-          </div>
+          </main>
         </div>
       </div>
-    </div>
+    </>
+  )
+}
+
+export default function App() {
+  return (
+    <ToastProvider>
+      <Dashboard />
+    </ToastProvider>
   )
 }
