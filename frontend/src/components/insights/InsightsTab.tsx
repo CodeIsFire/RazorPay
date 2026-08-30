@@ -140,17 +140,9 @@ export function InsightsTab({ onNavigate }: { onNavigate: (tab: TabId) => void }
           </div>
         </div>
         <div className="card-body">
+          {/* The legend moved inside the chart: it drives which series is
+              emphasised, so it has to share that state with the bars. */}
           <DailyTimeline days={daily.data?.days ?? []} />
-          <div className="chart-legend">
-            <span className="item">
-              <span className="swatch" style={{ background: 'var(--chart-bar)' }} />
-              Still outstanding
-            </span>
-            <span className="item">
-              <span className="swatch" style={{ background: 'var(--chart-context)' }} />
-              Reconciled
-            </span>
-          </div>
         </div>
       </div>
 

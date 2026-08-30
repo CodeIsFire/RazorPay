@@ -529,7 +529,14 @@
 
   .chart-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--gridline); }
   .chart-legend .item { display: inline-flex; align-items: center; gap: 7px; font-size: var(--fs-small); color: var(--text-secondary); }
-  .chart-legend .swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+  .chart-legend .swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; transition: opacity .15s ease; }
+  /* Where a legend entry drives the chart it becomes a button, so it needs the
+     UA's own button styling stripped back to what the span above already had.
+     Only the daily chart's entries are buttons -- the age chart's legend names
+     a condition, not a series, and stays inert. */
+  .chart-legend button.item { background: none; border: 0; padding: 0; margin: 0; font: inherit; font-size: var(--fs-small); cursor: pointer; }
+  .chart-legend button.item:hover { color: var(--text-primary); }
+  .chart-legend button.item[aria-pressed="true"] { color: var(--text-primary); }
 
   .chart-empty { padding: 28px 4px; text-align: center; color: var(--text-muted); font-size: var(--fs-small); }
 
