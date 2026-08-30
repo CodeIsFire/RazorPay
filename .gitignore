@@ -3,4 +3,10 @@ __pycache__/
 .venv/
 .env
 *.db
+# SQLite's WAL sidecars. The app runs in WAL mode (see db.get_connection), so
+# these appear next to the database on every run, and *.db does not match them --
+# the suffix comes after the extension. The -wal file holds committed pages that
+# have not been checkpointed yet, so it carries real transaction data.
+*.db-shm
+*.db-wal
 .pytest_cache/

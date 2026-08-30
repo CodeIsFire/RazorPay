@@ -2,11 +2,12 @@
   "seed": 42,
   "anchor": "2026-08-10T09:00:00+00:00",
   "summary": {
-    "exact_match": 10,
-    "fee_mismatch": 3,
-    "duplicate": 2,
-    "timing_lag": 2,
-    "failed_payment": 3
+    "exact_match": 30,
+    "fee_mismatch": 9,
+    "duplicate": 6,
+    "timing_lag": 6,
+    "failed_payment": 9,
+    "unexplained": 3
   },
   "cases": [
     {
@@ -80,77 +81,376 @@
       ]
     },
     {
-      "case_type": "fee_mismatch",
+      "case_type": "exact_match",
       "ledger_ref": "LED-0011",
       "gateway_refs": [
         "pout_lrDp37eCZ32Jgd"
+      ]
+    },
+    {
+      "case_type": "exact_match",
+      "ledger_ref": "LED-0012",
+      "gateway_refs": [
+        "pout_yq7YYDsBS9UYJQ"
+      ]
+    },
+    {
+      "case_type": "exact_match",
+      "ledger_ref": "LED-0013",
+      "gateway_refs": [
+        "pout_62Hkd9Gf2leMeR"
+      ]
+    },
+    {
+      "case_type": "exact_match",
+      "ledger_ref": "LED-0014",
+      "gateway_refs": [
+        "pout_7qnQTupqziQPtD"
+      ]
+    },
+    {
+      "case_type": "exact_match",
+      "ledger_ref": "LED-0015",
+      "gateway_refs": [
+        "pout_4pxskC1ITtNZPH"
+      ]
+    },
+    {
+      "case_type": "exact_match",
+      "ledger_ref": "LED-0016",
+      "gateway_refs": [
+        "pout_nRO2qGFq562dfO"
+      ]
+    },
+    {
+      "case_type": "exact_match",
+      "ledger_ref": "LED-0017",
+      "gateway_refs": [
+        "pout_84S5jIc1xLJjBi"
+      ]
+    },
+    {
+      "case_type": "exact_match",
+      "ledger_ref": "LED-0018",
+      "gateway_refs": [
+        "pout_ZZl4AblV7vY7AZ"
+      ]
+    },
+    {
+      "case_type": "exact_match",
+      "ledger_ref": "LED-0019",
+      "gateway_refs": [
+        "pout_bQmzvr3e9XrwPG"
+      ]
+    },
+    {
+      "case_type": "exact_match",
+      "ledger_ref": "LED-0020",
+      "gateway_refs": [
+        "pout_BMGhy5KmqcTBaH"
+      ]
+    },
+    {
+      "case_type": "exact_match",
+      "ledger_ref": "LED-0021",
+      "gateway_refs": [
+        "pout_SsJimAQ8yRV5lN"
+      ]
+    },
+    {
+      "case_type": "exact_match",
+      "ledger_ref": "LED-0022",
+      "gateway_refs": [
+        "pout_RnGEY59YVkQfsG"
+      ]
+    },
+    {
+      "case_type": "exact_match",
+      "ledger_ref": "LED-0023",
+      "gateway_refs": [
+        "pout_DA4OKmTSyFzpjP"
+      ]
+    },
+    {
+      "case_type": "exact_match",
+      "ledger_ref": "LED-0024",
+      "gateway_refs": [
+        "pout_JMu8W5CN0U5GB1"
+      ]
+    },
+    {
+      "case_type": "exact_match",
+      "ledger_ref": "LED-0025",
+      "gateway_refs": [
+        "pout_prvu5IfijoySjT"
+      ]
+    },
+    {
+      "case_type": "exact_match",
+      "ledger_ref": "LED-0026",
+      "gateway_refs": [
+        "pout_24WKyEa8wtWy25"
+      ]
+    },
+    {
+      "case_type": "exact_match",
+      "ledger_ref": "LED-0027",
+      "gateway_refs": [
+        "pout_Uk1D6iNIb6zLKQ"
+      ]
+    },
+    {
+      "case_type": "exact_match",
+      "ledger_ref": "LED-0028",
+      "gateway_refs": [
+        "pout_rW81Aq1fEbVId8"
+      ]
+    },
+    {
+      "case_type": "exact_match",
+      "ledger_ref": "LED-0029",
+      "gateway_refs": [
+        "pout_K8nDSqXxkMM9VT"
+      ]
+    },
+    {
+      "case_type": "exact_match",
+      "ledger_ref": "LED-0030",
+      "gateway_refs": [
+        "pout_gSXt2RMZhYKYcw"
+      ]
+    },
+    {
+      "case_type": "fee_mismatch",
+      "ledger_ref": "LED-0031",
+      "gateway_refs": [
+        "pout_BlUH9PrNZ6IXED"
       ],
       "fee_paise": 1000
     },
     {
       "case_type": "fee_mismatch",
-      "ledger_ref": "LED-0012",
+      "ledger_ref": "LED-0032",
       "gateway_refs": [
-        "pout_q7YYDsBS9UYJQT"
+        "pout_2ulFnwZqvr4MS4"
+      ],
+      "fee_paise": 1000
+    },
+    {
+      "case_type": "fee_mismatch",
+      "ledger_ref": "LED-0033",
+      "gateway_refs": [
+        "pout_sozSptQLxEJHwB"
+      ],
+      "fee_paise": 500
+    },
+    {
+      "case_type": "fee_mismatch",
+      "ledger_ref": "LED-0034",
+      "gateway_refs": [
+        "pout_VErULWHMsg1mso"
       ],
       "fee_paise": 300
     },
     {
       "case_type": "fee_mismatch",
-      "ledger_ref": "LED-0013",
+      "ledger_ref": "LED-0035",
       "gateway_refs": [
-        "pout_kd9Gf2leMeR3pz"
+        "pout_sEECvl9dq83Eh0"
+      ],
+      "fee_paise": 900
+    },
+    {
+      "case_type": "fee_mismatch",
+      "ledger_ref": "LED-0036",
+      "gateway_refs": [
+        "pout_MYNoXHyC6Ct3LB"
       ],
       "fee_paise": 1000
     },
     {
-      "case_type": "duplicate",
-      "ledger_ref": "LED-0014",
+      "case_type": "fee_mismatch",
+      "ledger_ref": "LED-0037",
       "gateway_refs": [
-        "pout_pqziQPtDu7W7ea",
-        "pout_xskC1ITtNZPHaQ"
+        "pout_aACSMEscosTsS3"
+      ],
+      "fee_paise": 200
+    },
+    {
+      "case_type": "fee_mismatch",
+      "ledger_ref": "LED-0038",
+      "gateway_refs": [
+        "pout_YtMV0K6sChDStS"
+      ],
+      "fee_paise": 500
+    },
+    {
+      "case_type": "fee_mismatch",
+      "ledger_ref": "LED-0039",
+      "gateway_refs": [
+        "pout_9R13KL8bWR0rKc"
+      ],
+      "fee_paise": 900
+    },
+    {
+      "case_type": "duplicate",
+      "ledger_ref": "LED-0040",
+      "gateway_refs": [
+        "pout_2kvASFsQ8z0WJc",
+        "pout_mHxNWFOCWdnrJi"
       ]
     },
     {
       "case_type": "duplicate",
-      "ledger_ref": "LED-0015",
+      "ledger_ref": "LED-0041",
       "gateway_refs": [
-        "pout_nRO2qGFq562dfO",
-        "pout_he84S5jIc1xLJj"
+        "pout_16hD8hP1jF7TsG",
+        "pout_3erXY2Av7YGr0a"
+      ]
+    },
+    {
+      "case_type": "duplicate",
+      "ledger_ref": "LED-0042",
+      "gateway_refs": [
+        "pout_7u3mSpKyo2XAcu",
+        "pout_H6DaUjA3PjeEYq"
+      ]
+    },
+    {
+      "case_type": "duplicate",
+      "ledger_ref": "LED-0043",
+      "gateway_refs": [
+        "pout_oVfBgWOT3gCkSt",
+        "pout_RYlklfN3yNRpF6"
+      ]
+    },
+    {
+      "case_type": "duplicate",
+      "ledger_ref": "LED-0044",
+      "gateway_refs": [
+        "pout_LtO9BSqD2tmy2E",
+        "pout_3RXVd6MVF155sX"
+      ]
+    },
+    {
+      "case_type": "duplicate",
+      "ledger_ref": "LED-0045",
+      "gateway_refs": [
+        "pout_Uif6suVAlmiYI4",
+        "pout_W9o3RURz92ZJxf"
       ]
     },
     {
       "case_type": "timing_lag",
-      "ledger_ref": "LED-0016",
+      "ledger_ref": "LED-0046",
       "gateway_refs": [
-        "pout_77p3kZZl4AblV7"
+        "pout_N48Ju6NoPeO0D6"
       ]
     },
     {
       "case_type": "timing_lag",
-      "ledger_ref": "LED-0017",
+      "ledger_ref": "LED-0047",
       "gateway_refs": [
-        "pout_obQmzvr3e9XrwP"
+        "pout_xQ8VS8IALVUj4A"
+      ]
+    },
+    {
+      "case_type": "timing_lag",
+      "ledger_ref": "LED-0048",
+      "gateway_refs": [
+        "pout_I5Pwdzrm9h820D"
+      ]
+    },
+    {
+      "case_type": "timing_lag",
+      "ledger_ref": "LED-0049",
+      "gateway_refs": [
+        "pout_03ovXjY5Mar2ji"
+      ]
+    },
+    {
+      "case_type": "timing_lag",
+      "ledger_ref": "LED-0050",
+      "gateway_refs": [
+        "pout_VAHhVeECXxGLgC"
+      ]
+    },
+    {
+      "case_type": "timing_lag",
+      "ledger_ref": "LED-0051",
+      "gateway_refs": [
+        "pout_e5fuMjeirNOLJT"
       ]
     },
     {
       "case_type": "failed_payment",
-      "ledger_ref": "LED-0018",
+      "ledger_ref": "LED-0052",
       "gateway_refs": []
     },
     {
       "case_type": "failed_payment",
-      "ledger_ref": "LED-0019",
+      "ledger_ref": "LED-0053",
       "gateway_refs": []
     },
     {
       "case_type": "failed_payment",
-      "ledger_ref": "LED-0020",
+      "ledger_ref": "LED-0054",
       "gateway_refs": []
+    },
+    {
+      "case_type": "failed_payment",
+      "ledger_ref": "LED-0055",
+      "gateway_refs": []
+    },
+    {
+      "case_type": "failed_payment",
+      "ledger_ref": "LED-0056",
+      "gateway_refs": []
+    },
+    {
+      "case_type": "failed_payment",
+      "ledger_ref": "LED-0057",
+      "gateway_refs": []
+    },
+    {
+      "case_type": "failed_payment",
+      "ledger_ref": "LED-0058",
+      "gateway_refs": []
+    },
+    {
+      "case_type": "failed_payment",
+      "ledger_ref": "LED-0059",
+      "gateway_refs": []
+    },
+    {
+      "case_type": "failed_payment",
+      "ledger_ref": "LED-0060",
+      "gateway_refs": []
+    },
+    {
+      "case_type": "unexplained",
+      "ledger_ref": null,
+      "gateway_refs": [
+        "pout_1ffBgVVxZiJdL9"
+      ]
+    },
+    {
+      "case_type": "unexplained",
+      "ledger_ref": null,
+      "gateway_refs": [
+        "pout_njQEo2gw2JxhWr"
+      ]
+    },
+    {
+      "case_type": "unexplained",
+      "ledger_ref": null,
+      "gateway_refs": [
+        "pout_6vwal3jKQzejVO"
+      ]
     }
   ],
   "totals": {
-    "ledger_rows": 20,
-    "gateway_rows": 19
+    "ledger_rows": 60,
+    "gateway_rows": 60
   }
 }

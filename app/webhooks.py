@@ -47,10 +47,25 @@ EVENT_TO_OUTCOME = {
 }
 
 
+def _entity_ref(payload: dict) -> str:
+    """The one id worth surfacing from a webhook payload -- the payout or
+    transaction entity it is about. Falls back to whatever id is at the top
+    level, then to an empty string. The full payload is not stored in the
+    audit detail (it is a Python repr blob that renders as noise); it stays
+    available in RazorpayX's own webhook logs."""
+    body = payload.get("payload") or {}
+    for key in ("payout", "transaction", "settlement", "refund"):
+        entity = (body.get(key) or {}).get("entity") or {}
+        if entity.get("id"):
+            return entity["id"]
+    return payload.get("id", "")
+
+
 def handle_webhook(conn: sqlite3.Connection, payload: dict) -> dict:
     event = payload.get("event", "")
+    ref = _entity_ref(payload)
     log_audit(conn, actor="webhook", subject_type="webhook_event", subject_id=event or "unknown",
-              event="webhook_received", detail=str(payload)[:500])
+              event="webhook_received", detail=f"{event} · {ref}" if ref else event)
     conn.commit()
 
     outcome = EVENT_TO_OUTCOME.get(event)

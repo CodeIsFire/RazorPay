@@ -4,13 +4,18 @@
 
 PRAGMA foreign_keys = ON;
 
--- Every row ingested from either source, unified. `source` distinguishes
--- the synthetic ledger (the "expected" side) from RazorpayX test-mode
--- transactions (the "actual" side) so the matcher in M2 can query both
--- through one table.
+-- Every row ingested from any source, unified. `source` distinguishes the
+-- synthetic ledger (the "expected" side, always 'ledger') from every
+-- "actual" side reconcile.py can be pointed at -- RazorpayX test-mode
+-- transactions ('gateway') or a real bank statement ('bank_statement') --
+-- so the matcher in M2 can query any of them through one table. Adding a
+-- fourth "actual" source (a settlement file, an ERP export, ...) means
+-- adding one more literal here, not a new table: reconcile()/classify()
+-- neither know nor care what the non-ledger source is called, only
+-- reconcile_from_db()'s SQL and this constraint do.
 CREATE TABLE IF NOT EXISTS transactions (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
-    source          TEXT NOT NULL CHECK (source IN ('ledger', 'gateway')),
+    source          TEXT NOT NULL CHECK (source IN ('ledger', 'gateway', 'bank_statement')),
     external_ref    TEXT NOT NULL,          -- ledger order id, or RazorpayX payout/transaction id
     reference_id    TEXT,                   -- shared correlation key: on ledger rows, their own id;
                                              -- on gateway rows, the ledger id we asked RazorpayX to
@@ -20,8 +25,57 @@ CREATE TABLE IF NOT EXISTS transactions (
     amount_paise    INTEGER NOT NULL,
     currency        TEXT NOT NULL DEFAULT 'INR',
     counterparty    TEXT,                   -- contact/fund account name or id, if known
+    transaction_type TEXT NOT NULL DEFAULT 'payment'
+                     CHECK (transaction_type IN ('payment', 'refund', 'chargeback')),
+    original_ref    TEXT,                   -- for refund/chargeback rows: the external_ref of the
+                                             -- payment being reversed, so a reversal is always
+                                             -- traceable to its origin rather than reconciled as
+                                             -- an independent transaction (see app/classify.py).
+    settlement_batch_id TEXT,               -- ledger rows sharing this id are settled together by
+                                             -- one gateway row whose reference_id equals the batch
+                                             -- id (not any single ledger row's own id) -- the N:1
+                                             -- batch-settlement direction of partial-payment
+                                             -- matching (see app/reconcile.py).
     narration       TEXT,
     occurred_at     TEXT NOT NULL,           -- ISO 8601
+
+    -- ---- RazorpayX payout instruction (Tally batch-payout template) ----
+    -- Shaped after RazorpayX's Tally batch-payout CSV, so a ledger row IS a
+    -- payout instruction: everything create_payout() needs lives on the row
+    -- instead of in config defaults plus a side-car fund_account_map.json.
+    --
+    -- All nullable, and deliberately so: only source='ledger' rows are payout
+    -- instructions. 'gateway'/'bank_statement' rows are observations of a
+    -- payout that already happened and leave every one of these NULL. SQLite
+    -- CHECK passes when its expression is NULL, so the constrained columns
+    -- need no extra IS NULL guard.
+    --
+    -- Four template columns are NOT repeated here because the existing schema
+    -- already carries them: payout reference id -> reference_id, payout amount
+    -- -> amount_paise (the template is in rupees; x100 on the way in), payout
+    -- date -> occurred_at, contact name -> counterparty. The template's first
+    -- column, the RazorpayX business account number, is per-account not
+    -- per-row and lives in config.RAZORPAYX_ACCOUNT_NUMBER.
+    payout_purpose      TEXT CHECK (payout_purpose IN
+                            ('refund', 'cashback', 'payout', 'salary',
+                             'utility bill', 'vendor bill')),
+    payout_mode         TEXT CHECK (payout_mode IN ('NEFT', 'RTGS', 'IMPS', 'UPI', 'card')),
+    -- 'bank_account' rows carry ifsc + number and no vpa; 'vpa' rows carry
+    -- vpa and neither of the other two. Never both -- asserted in tests.
+    fund_account_type   TEXT CHECK (fund_account_type IN ('bank_account', 'vpa')),
+    fund_account_name   TEXT,
+    fund_account_ifsc   TEXT,
+    fund_account_number TEXT,
+    fund_account_vpa    TEXT,
+    contact_type        TEXT CHECK (contact_type IN ('vendor', 'customer', 'employee', 'self')),
+    contact_email       TEXT,
+    contact_mobile      TEXT,
+    contact_address     TEXT,
+    contact_city        TEXT,
+    contact_zipcode     TEXT,
+    contact_state       TEXT,
+    notes               TEXT,
+
     raw_json        TEXT,                    -- original row, verbatim, for debugging/audit
     created_at      TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -65,14 +119,22 @@ CREATE TABLE IF NOT EXISTS exceptions (
     exception_key  TEXT NOT NULL UNIQUE,
     cause          TEXT NOT NULL CHECK (
                        cause IN ('failed_payment', 'fee_mismatch', 'duplicate',
-                                 'timing_lag', 'unexplained')
+                                 'timing_lag', 'unexplained', 'refund_unmatched',
+                                 'chargeback', 'partial_payment')
                    ),
     ledger_ref     TEXT,     -- transactions.external_ref where source='ledger', if any
-    gateway_ref    TEXT,     -- transactions.external_ref where source='gateway', if any
+    gateway_ref    TEXT,     -- transactions.external_ref of the correlated non-ledger row, if
+                             -- any -- named for the original gateway-only pipeline; see
+                             -- matched_source for which actual source it actually came from
+    matched_source TEXT NOT NULL DEFAULT 'gateway'
+                   CHECK (matched_source IN ('gateway', 'bank_statement')),
     amount_paise   INTEGER NOT NULL,
     detail         TEXT,
+    -- No 'in_progress': nothing in the app branched on it differently from
+    -- 'open' (retry_count already tells you whether an attempt's been
+    -- made), so it was a distinction without a use -- see app/router.py.
     status         TEXT NOT NULL DEFAULT 'open' CHECK (
-                       status IN ('open', 'in_progress', 'resolved', 'abandoned')
+                       status IN ('open', 'pending', 'resolved', 'abandoned')
                    ),
     retry_count    INTEGER NOT NULL DEFAULT 0,  -- owned by M5's action router, not written here
     created_at     TEXT NOT NULL DEFAULT (datetime('now')),
@@ -102,8 +164,13 @@ CREATE TABLE IF NOT EXISTS actions (
     -- (see app/live_executor.py) rather than collapsed into our own names
     -- -- only the confirm step (mocked now, a real webhook at M6) may set
     -- a terminal outcome; dispatch alone never produces 'processed'.
-    status            TEXT NOT NULL DEFAULT 'dispatched' CHECK (
-                          status IN ('dispatched', 'queued', 'processing', 'processed',
+    -- 'completed' is this app's own label for the three non-payout action
+    -- types (draft_dispute_note/send_reminder/flag_for_review), which
+    -- finish the instant they're dispatched. No DEFAULT: every insert sets
+    -- this explicitly (see app/router.py), so a future insert that forgets
+    -- to should fail loudly rather than silently land on a placeholder.
+    status            TEXT NOT NULL CHECK (
+                          status IN ('queued', 'processing', 'processed',
                                      'reversed', 'failed', 'rejected', 'completed')
                       ),
     gateway_payout_id TEXT,

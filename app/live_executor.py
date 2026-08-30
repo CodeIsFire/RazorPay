@@ -8,52 +8,63 @@ create_payout() returns RazorpayX's own status verbatim ('queued',
 -- see schema.sql's actions.status CHECK, which was widened at M6 to
 accept RazorpayX's real states, not just the two the mock ever produces.
 
-A real payout needs to know WHERE the money goes, and the synthetic
-ledger (M1) has no real bank details -- it's fixture data. fund_account_map
-is a simple counterparty(=ledger_ref) -> fund_account_id dict, loaded from
-JSON at data/fund_account_map.json. See scripts/setup_test_payee.py for
-creating one real test-mode Contact + Fund Account and populating that
-file. Until it's populated, this executor fails loudly and specifically
-per-exception (caught by router.route_exception, logged, no action taken)
-rather than either crashing the whole batch or silently no-op'ing.
+A real payout needs to know WHERE the money goes. That used to come from a
+side-car: data/fund_account_map.json, a ledger_ref -> fund_account_id dict
+populated by hand out of band, because the synthetic ledger had no bank
+details to speak of. It doesn't need one any more --
+`transactions` now carries the RazorpayX Tally batch-payout fields, so a
+ledger row IS a payout instruction, and this executor sends it as a
+composite payout (contact + fund account + payout in a single call).
+
+Two consequences worth knowing:
+
+  * Adding a payee is now a data change in the ledger, not an out-of-band
+    provisioning step someone has to remember to run.
+  * The fixtures' IFSC codes are real ones, verified against Razorpay's own
+    directory -- RazorpayX validates IFSC on fund account creation, so
+    invented codes would be rejected here (see app/fixtures.py:IFSC_CODES).
+
+A row with no payout instruction fails loudly and specifically per-exception
+(caught by router.route_exception, logged, no action taken) rather than
+either crashing the whole batch or silently no-op'ing.
 """
 from __future__ import annotations
 
-import json
-from pathlib import Path
-
-from app import config, razorpayx_client as rzpx
-
-
-def load_fund_account_map() -> dict:
-    path = Path(config.RAZORPAYX_FUND_ACCOUNT_MAP_PATH)
-    if not path.exists():
-        return {}
-    return json.loads(path.read_text())
+from app import razorpayx_client as rzpx
 
 
 class RazorpayXPayoutExecutor:
-    def __init__(self, fund_account_map: dict | None = None):
-        self.fund_account_map = fund_account_map if fund_account_map is not None else load_fund_account_map()
-
     def create_payout(self, *, idempotency_key: str, amount_paise: int,
-                       counterparty: str, purpose: str) -> dict:
-        fund_account_id = self.fund_account_map.get(counterparty)
-        if not fund_account_id:
+                       counterparty: str, purpose: str,
+                       payout_instruction: dict | None = None) -> dict:
+        if not payout_instruction:
             raise ValueError(
-                f"no fund_account_id configured for counterparty={counterparty!r} in "
-                f"{config.RAZORPAYX_FUND_ACCOUNT_MAP_PATH} -- run scripts/setup_test_payee.py "
-                f"or add an entry manually before retrying this exception"
+                f"ledger row {counterparty!r} carries no payout instruction -- "
+                f"it needs fund_account_type plus either an IFSC and account "
+                f"number, or a VPA (see schema.sql's Tally payout columns). "
+                f"A row ingested before those columns existed will look like this."
             )
 
-        header_key = rzpx.sanitize_idempotency_key(idempotency_key)
-        result = rzpx.create_payout(
-            idempotency_key=header_key,
-            fund_account_id=fund_account_id,
+        # Raw key, not pre-hashed: create_composite_payout() derives the
+        # wire header from this plus the body it assembles, so a rebuilt
+        # local DB replaying 'attempt1' can't collide with a differently
+        # shaped request RazorpayX already saw under that key.
+        result = rzpx.create_composite_payout(
+            idempotency_key=idempotency_key,
+            instruction=payout_instruction,
             amount_paise=amount_paise,
-            purpose="payout",
             reference_id=idempotency_key,
             narration="Reconcile Recover retry",
             queue_if_low_balance=True,
         )
         return {"gateway_payout_id": result["id"], "status": result["status"]}
+
+
+class RazorpayXPayoutStatusFetcher:
+    """Reads a payout's current status straight from RazorpayX, for
+    router.sync_payout_statuses(). Kept separate from the executor because
+    it is a read: it dispatches nothing and can never move money, so there is
+    no reason for it to share the executor's write-shaped interface."""
+
+    def fetch_payout_status(self, gateway_payout_id: str) -> str:
+        return rzpx.fetch_payout(gateway_payout_id)["status"]

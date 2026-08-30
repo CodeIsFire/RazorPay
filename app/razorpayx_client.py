@@ -31,6 +31,7 @@ this runs with an actual route to api.razorpay.com.
 from __future__ import annotations
 
 import hashlib
+import json
 
 import httpx
 
@@ -57,6 +58,28 @@ def sanitize_idempotency_key(raw_key: str) -> str:
     here rather than accidental.
     """
     return hashlib.sha256(raw_key.encode()).hexdigest()[:32]
+
+
+def idempotency_header_for(raw_key: str, body: dict) -> str:
+    """Like sanitize_idempotency_key(), but folds the request body into the
+    hash as well.
+
+    RazorpayX rejects a request outright ('Different request body sent for
+    the same Idempotency Header') if a key it has already seen arrives with
+    different content -- and it remembers keys for longer than a local dev
+    database lives. Our internal key is exception_key + attempt number,
+    which resets whenever the DB is rebuilt, so the same key can legitimately
+    come back carrying a completely different payout body.
+
+    Hashing the body alongside the key keeps genuine idempotency intact -- an
+    identical redispatch still produces an identical header and is still
+    deduplicated by RazorpayX -- while making a *changed* request impossible
+    to send under a stale key. The DB's actions.idempotency_key column is
+    untouched by this: it remains exception_key + attempt number exactly as
+    schema.sql documents, and this is only the wire header derived from it.
+    """
+    canonical = json.dumps(body, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(f"{raw_key}\n{canonical}".encode()).hexdigest()[:32]
 
 
 def _auth() -> tuple[str, str]:
@@ -99,6 +122,85 @@ def create_fund_account_bank(*, contact_id: str, account_holder_name: str,
         },
     }
     resp = httpx.post(f"{BASE_URL}/fund_accounts", json=body, auth=_auth(), timeout=TIMEOUT_SECONDS)
+    _raise_for_status(resp)
+    return resp.json()
+
+
+def build_composite_fund_account(instruction: dict) -> dict:
+    """The `fund_account` half of a composite payout body, built from a
+    ledger row's Tally payout instruction (see db.fetch_payout_instruction).
+
+    'bank_account' and 'vpa' are mutually exclusive shapes, and RazorpayX
+    rejects a body carrying the wrong one for its account_type -- so this
+    branches rather than sending both and letting the API sort it out.
+    """
+    account_type = instruction["fund_account_type"]
+    contact = {
+        "name": instruction.get("fund_account_name") or instruction.get("counterparty"),
+        "type": instruction.get("contact_type") or "vendor",
+    }
+    # Only send optional contact fields we actually have -- an explicit null
+    # is a validation error, whereas an absent key is simply "not provided".
+    if instruction.get("contact_email"):
+        contact["email"] = instruction["contact_email"]
+    if instruction.get("contact_mobile"):
+        contact["contact"] = instruction["contact_mobile"]
+
+    if account_type == "bank_account":
+        fund_account = {
+            "account_type": "bank_account",
+            "bank_account": {
+                "name": instruction.get("fund_account_name") or instruction.get("counterparty"),
+                "ifsc": instruction["fund_account_ifsc"],
+                "account_number": instruction["fund_account_number"],
+            },
+        }
+    elif account_type == "vpa":
+        fund_account = {
+            "account_type": "vpa",
+            "vpa": {"address": instruction["fund_account_vpa"]},
+        }
+    else:
+        raise ValueError(f"unsupported fund_account_type={account_type!r}")
+
+    fund_account["contact"] = contact
+    return fund_account
+
+
+def create_composite_payout(*, idempotency_key: str, instruction: dict, amount_paise: int,
+                             reference_id: str | None = None, narration: str | None = None,
+                             queue_if_low_balance: bool = True) -> dict:
+    """Contact + fund account + payout in one call, built entirely from the
+    ledger row's own instruction. Replaces the contact/fund-account
+    pre-provisioning dance (and the fund_account_map side-car it needed)
+    now that a ledger row carries real, dispatchable bank details.
+
+    RazorpayX deduplicates the contact and fund account it creates here, so
+    re-dispatching the same payee doesn't pile up duplicates; the payout
+    itself is guarded by the X-Payout-Idempotency header exactly as in
+    create_payout() above.
+    """
+    body = {
+        "account_number": config.RAZORPAYX_ACCOUNT_NUMBER,
+        "amount": amount_paise,
+        "currency": instruction.get("currency") or "INR",
+        # The row's own mode -- a 'vpa' fund account only settles over UPI,
+        # so mode and account type are chosen together upstream.
+        "mode": instruction.get("payout_mode") or config.RAZORPAYX_PAYOUT_MODE,
+        "purpose": instruction.get("payout_purpose") or "payout",
+        "fund_account": build_composite_fund_account(instruction),
+        "queue_if_low_balance": queue_if_low_balance,
+    }
+    if reference_id:
+        body["reference_id"] = reference_id[:40]
+    if narration:
+        body["narration"] = narration[:30]
+
+    # Derived here, not by the caller, because it depends on the body this
+    # function just finished assembling.
+    headers = {"X-Payout-Idempotency": idempotency_header_for(idempotency_key, body)}
+    resp = httpx.post(f"{BASE_URL}/payouts", json=body, headers=headers,
+                       auth=_auth(), timeout=TIMEOUT_SECONDS)
     _raise_for_status(resp)
     return resp.json()
 

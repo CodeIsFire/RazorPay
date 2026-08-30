@@ -149,7 +149,7 @@ def test_webhook_endpoint_end_to_end(isolated_db, monkeypatch):
 
         client.post("/pipeline/reconcile")
         route_resp = client.post("/pipeline/route")
-        assert route_resp.json()["dispatched"] == 10  # mock executor -- no live creds set
+        assert route_resp.json()["dispatched"] == 24  # 9 fee_mismatch already auto-resolved
 
         conn = get_connection()
         action = conn.execute(
@@ -166,7 +166,7 @@ def test_webhook_endpoint_end_to_end(isolated_db, monkeypatch):
         assert resp.json()["handled"] is True
 
         funnel = client.get("/funnel").json()
-        assert funnel["recovered"] == 1
+        assert funnel["recovered"] == 10  # 9 fee_mismatch auto-resolved + this one confirmed
 
         bad_resp = client.post("/webhooks/razorpayx", content=body,
                                 headers={"X-Razorpay-Signature": "deadbeef"})

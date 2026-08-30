@@ -1,0 +1,45 @@
+{
+  "file_count": 42,
+  "hubs": [
+    {
+      "path": "app/db.py",
+      "importers": 10
+    },
+    {
+      "path": "app/config.py",
+      "importers": 9
+    },
+    {
+      "path": "app/fixtures.py",
+      "importers": 9
+    },
+    {
+      "path": "app/load_fixtures.py",
+      "importers": 9
+    },
+    {
+      "path": "app/__init__.py",
+      "importers": 8
+    },
+    {
+      "path": "app/classify.py",
+      "importers": 7
+    },
+    {
+      "path": "app/main.py",
+      "importers": 5
+    },
+    {
+      "path": "app/reconcile.py",
+      "importers": 5
+    },
+    {
+      "path": "app/router.py",
+      "importers": 5
+    },
+    {
+      "path": "app/funnel.py",
+      "importers": 4
+    }
+  ]
+}

@@ -1,0 +1,305 @@
+{
+  "changed": [
+    {
+      "path": ".claude/launch.json",
+      "hash": "683c1be3f4aab4746c5e44db75fe18cb8de71fc108ac46a9c044c3ba12afa09e",
+      "size": 247,
+      "status": "untracked"
+    },
+    {
+      "path": ".env.example",
+      "hash": "eb6ae9a73132861e960d15aa1e84b5c94cefa2cceb3931cc16a70723f5b88519",
+      "size": 502,
+      "status": "modified"
+    },
+    {
+      "path": "PROJECT_SUMMARY.md",
+      "hash": "7a979d2bc550c2e6dd3d4de1ca3d023f4e0ae8a81f90b88c503f3f152e4c84f7",
+      "size": 10298,
+      "status": "modified"
+    },
+    {
+      "path": "app/analytics.py",
+      "hash": "ecbf6726442d675066003b68bdbcc15c55092108881815277abfbdd2a56f07cd",
+      "size": 10824,
+      "status": "untracked"
+    },
+    {
+      "path": "app/classify.py",
+      "hash": "faecd7beecc7d8d4e8e0b90d677da93625715a39194a9a298ddb173a734d4ca5",
+      "size": 18813,
+      "status": "modified"
+    },
+    {
+      "path": "app/config.py",
+      "hash": "be50b46bd50ec79a849961b82a225fb6c28ca2b7e701f342eef56a767ed0c7f5",
+      "size": 2932,
+      "status": "modified"
+    },
+    {
+      "path": "app/db.py",
+      "hash": "75261f64f3dc5b0e9f570930caa2b94f9453c785efc4a9413024817df5ca0cf9",
+      "size": 9075,
+      "status": "modified"
+    },
+    {
+      "path": "app/fixtures.py",
+      "hash": "3aa007fb30b9ddfc9c566e6df937c5a6f924ad3654ce3bdd43692fbb2588411d",
+      "size": 30749,
+      "status": "modified"
+    },
+    {
+      "path": "app/funnel.py",
+      "hash": "3126c36ed88bd8d5a1b1d3d11411f301bd46d37359e8dd6d3fe41a9e1f10b851",
+      "size": 3264,
+      "status": "modified"
+    },
+    {
+      "path": "app/live_executor.py",
+      "hash": "f0e2283cf3b0247e335b4f4de6fd5c5771f643010ef168ab822d8fead1a7d0c0",
+      "size": 3450,
+      "status": "modified"
+    },
+    {
+      "path": "app/load_fixtures.py",
+      "hash": "0174043043f986970615eb07ca7debe625d2067271a165453fdbbcee3266bb1a",
+      "size": 2655,
+      "status": "modified"
+    },
+    {
+      "path": "app/main.py",
+      "hash": "855b30818181b34e66e905e5ebbfd8aca33730d1a4241474e762d9f13997b108",
+      "size": 12526,
+      "status": "modified"
+    },
+    {
+      "path": "app/razorpayx_client.py",
+      "hash": "d7986f26d4ff55937bb6dbe72896b4dd98fb9bdb165ef696f552b81044297663",
+      "size": 10185,
+      "status": "modified"
+    },
+    {
+      "path": "app/reconcile.py",
+      "hash": "58bb3e260c66aa9cd6130c140acd742bf7bef8b767e56d3ff7e2a1397f22507d",
+      "size": 11358,
+      "status": "modified"
+    },
+    {
+      "path": "app/router.py",
+      "hash": "879cc9e5a91b8c4432600d9be4d4bd432f889b86e8f554d1e29475d91c884d58",
+      "size": 23342,
+      "status": "modified"
+    },
+    {
+      "path": "app/static/index.html",
+      "hash": "f914e6fbd891c32357adb2c1fa14f0b6ecbecee324c3f7dbc201319af613beed",
+      "size": 94992,
+      "status": "modified"
+    },
+    {
+      "path": "app/webhooks.py",
+      "hash": "9f77e80cc286624bea48ff8b9a6742a7d9ac5dbea09afd543c470f9ba3254a2f",
+      "size": 4164,
+      "status": "modified"
+    },
+    {
+      "path": "data/fixtures/gateway.json",
+      "hash": "f2752bd2ff0c9766260451e1adcffed35cdd7208993ae351a88a33f25e7e6cc9",
+      "size": 29668,
+      "status": "modified"
+    },
+    {
+      "path": "data/fixtures/ground_truth.json",
+      "hash": "1de3dbef253796c1ba0cd217ea028e06e7aab095cd307184f75626d6730dffdd",
+      "size": 9247,
+      "status": "modified"
+    },
+    {
+      "path": "data/fixtures/ledger.json",
+      "hash": "6dc0fb06abae8ec64455934570d76501801f750798eb539dd277626a8efe1b9c",
+      "size": 58939,
+      "status": "modified"
+    },
+    {
+      "path": "data/fund_account_map.json",
+      "hash": "08ebb5f86beaf5e1660872c9f926e6c4e472e7eb28be1d1bd375b0a35631a13b",
+      "size": 317,
+      "status": "modified"
+    },
+    {
+      "path": "data/recon_recover.db-wal",
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "untracked"
+    },
+    {
+      "path": "schema.sql",
+      "hash": "9bb85d03e64c72de8cfdf00df33ef9a63ccd60263556ce5af7fa5d476a1c59be",
+      "size": 10632,
+      "status": "modified"
+    },
+    {
+      "path": "scripts/load_demo_data.py",
+      "hash": "8ea82a71b149f6b09a6415f5e02c9404594eefe43d10d6fcea59c1163d20183b",
+      "size": 3544,
+      "status": "modified"
+    },
+    {
+      "path": "scripts/setup_test_payee.py",
+      "status": "modified"
+    },
+    {
+      "path": "tests/conftest.py",
+      "hash": "97c48db20e587b8010f147553831bac97d0ab3c550f9dc2664e59a0f146007c2",
+      "size": 1228,
+      "status": "modified"
+    },
+    {
+      "path": "tests/test_analytics.py",
+      "hash": "a5369f6e47a9d191bc3b4d91dbfc6b8ab3dd1d07a164e5fded531f1d3479cf12",
+      "size": 12781,
+      "status": "untracked"
+    },
+    {
+      "path": "tests/test_classify.py",
+      "hash": "34ff566db03ba5d3749f6fe39e07ef99d7cba5d080be95198c9db02d6b79102d",
+      "size": 10678,
+      "status": "modified"
+    },
+    {
+      "path": "tests/test_exception_detail.py",
+      "hash": "225ab28743953642c0c35f67e761826c31345423f36ba2e05fcab175826c5aaa",
+      "size": 6705,
+      "status": "untracked"
+    },
+    {
+      "path": "tests/test_fixtures.py",
+      "hash": "f4faa854e8bb21c6768701e5ee45b36fb5a0f27d62d260e9d8cd9282e0bf378b",
+      "size": 16975,
+      "status": "modified"
+    },
+    {
+      "path": "tests/test_funnel.py",
+      "hash": "b6ee5c6f420177c6682e510760555d0d98affa48459dae5b991012e9af8670d2",
+      "size": 4707,
+      "status": "modified"
+    },
+    {
+      "path": "tests/test_health.py",
+      "hash": "d14226c87b78d4a008afb92fbbdcd8102f6b026bb4b43ae8343ede8c1dce6ccd",
+      "size": 2208,
+      "status": "modified"
+    },
+    {
+      "path": "tests/test_partial_payment.py",
+      "hash": "5e3df20dbf2048535a89532f7d51e6f49fb888ad59ebd179f1ba2175aa06c0a2",
+      "size": 22199,
+      "status": "untracked"
+    },
+    {
+      "path": "tests/test_razorpayx_client.py",
+      "hash": "ee1cc8077bc0b68f92c22f8ef91a44c17c56b46bf01f6195e9f0c4fa2b49a761",
+      "size": 10552,
+      "status": "modified"
+    },
+    {
+      "path": "tests/test_reconcile.py",
+      "hash": "133b6c3d3ce5246be9cf0e02d07223d8c70afc54a7bbe93ccc223695ab01d937",
+      "size": 7874,
+      "status": "modified"
+    },
+    {
+      "path": "tests/test_router.py",
+      "hash": "84bf09f785163c266457d4457826c141ad9c31af534a1f0beddbc0c2f3b9b202",
+      "size": 36926,
+      "status": "modified"
+    },
+    {
+      "path": "tests/test_webhooks.py",
+      "hash": "bdf5d7427cb93296f9d4a7c76563df619b58704e8f1d766b599fff1cbef3bfa2",
+      "size": 7222,
+      "status": "modified"
+    }
+  ],
+  "risk_files": [
+    {
+      "path": "app/db.py",
+      "importers": 10,
+      "is_hub": true,
+      "reason": "hub file imported by 10 files"
+    },
+    {
+      "path": "app/config.py",
+      "importers": 9,
+      "is_hub": true,
+      "reason": "hub file imported by 9 files"
+    },
+    {
+      "path": "app/fixtures.py",
+      "importers": 9,
+      "is_hub": true,
+      "reason": "hub file imported by 9 files"
+    },
+    {
+      "path": "app/load_fixtures.py",
+      "importers": 9,
+      "is_hub": true,
+      "reason": "hub file imported by 9 files"
+    },
+    {
+      "path": "app/classify.py",
+      "importers": 7,
+      "is_hub": true,
+      "reason": "hub file imported by 7 files"
+    },
+    {
+      "path": "app/main.py",
+      "importers": 5,
+      "is_hub": true,
+      "reason": "hub file imported by 5 files"
+    },
+    {
+      "path": "app/reconcile.py",
+      "importers": 5,
+      "is_hub": true,
+      "reason": "hub file imported by 5 files"
+    },
+    {
+      "path": "app/router.py",
+      "importers": 5,
+      "is_hub": true,
+      "reason": "hub file imported by 5 files"
+    },
+    {
+      "path": "app/funnel.py",
+      "importers": 4,
+      "is_hub": true,
+      "reason": "hub file imported by 4 files"
+    },
+    {
+      "path": "app/analytics.py",
+      "importers": 2,
+      "is_hub": false,
+      "reason": "imported by 2 files"
+    },
+    {
+      "path": "app/live_executor.py",
+      "importers": 2,
+      "is_hub": false,
+      "reason": "imported by 2 files"
+    },
+    {
+      "path": "app/webhooks.py",
+      "importers": 2,
+      "is_hub": false,
+      "reason": "imported by 2 files"
+    }
+  ],
+  "recent_events": [],
+  "next_steps": [
+    "Review downstream dependents for high-impact files before merge.",
+    "Run tests covering changed files before handoff."
+  ],
+  "open_questions": [
+    "Live watch state was unavailable; timeline may be incomplete."
+  ]
+}
