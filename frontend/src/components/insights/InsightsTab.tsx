@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { BarRows, type BarRow } from '@/components/insights/BarRows'
 import { DailyTimeline } from '@/components/insights/DailyTimeline'
 import { IconRefresh } from '@/components/icons'
+import { LoadFailed } from '@/components/LoadFailed'
 import { useToast } from '@/components/Toast'
 import { fmtPaise } from '@/lib/format'
 import { groupBacklogByCause } from '@/lib/insights'
@@ -71,6 +72,23 @@ export function InsightsTab({ onNavigate }: { onNavigate: (tab: TabId) => void }
         occurred, not from when the pipeline last ran.
       </p>
 
+      {/* One banner for the tab rather than one per chart: all three charts
+          and all three tiles come from the same two queries, so a failure is
+          a property of the page, not of any one card. The tiles below keep
+          showing '–', which the banner explains is "unknown", not "zero". */}
+      {(analytics.isError || daily.isError || exceptions.isError) && (
+        <LoadFailed
+          what="the backlog analytics"
+          error={analytics.error ?? daily.error ?? exceptions.error}
+          onRetry={() => {
+            void analytics.refetch()
+            void daily.refetch()
+            void exceptions.refetch()
+          }}
+          retrying={analytics.isFetching || daily.isFetching || exceptions.isFetching}
+        />
+      )}
+
       <div className="kpi-row">
         <div className="tile">
           <div className="label">Value at risk</div>
@@ -112,8 +130,13 @@ export function InsightsTab({ onNavigate }: { onNavigate: (tab: TabId) => void }
             title="Refresh"
             aria-label="Refresh"
             onClick={async () => {
-              await Promise.all([analytics.refetch(), daily.refetch(), exceptions.refetch()])
-              toast('Insights refreshed.')
+              const results = await Promise.all([
+                analytics.refetch(),
+                daily.refetch(),
+                exceptions.refetch(),
+              ])
+              const failed = results.some((r) => r.isError)
+              toast(failed ? 'Couldn’t refresh insights.' : 'Insights refreshed.', failed)
             }}
           >
             <IconRefresh />

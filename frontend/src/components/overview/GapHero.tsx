@@ -84,15 +84,22 @@ export function GapHero({
       ? 'Every recorded payout has settled against the ledger.'
       : `${funnel?.exceptions ?? 0} record${funnel?.exceptions === 1 ? '' : 's'} the recovery agent is still working.`
 
+  // No aria-label on the button below. One would REPLACE its contents as the
+  // accessible name, and those contents are the headline figure this whole
+  // page exists to report -- labelling the button silenced the single most
+  // important number in the product. aria-describedby is additive instead.
   return (
     <button
       className="card gap-hero clickable"
-      aria-label="Open the records that need attention"
+      aria-describedby="gap-hero-action"
       onClick={onOpenExceptions}
     >
       <div className="eyebrow">Unreconciled on the ledger</div>
       <div className="figure mono">{hasActivity ? fmtPaise(gap) : '–'}</div>
       <div className="note">{note}</div>
+      <span className="sr-only" id="gap-hero-action">
+        Opens the records that need attention
+      </span>
 
       <div className={`gap-bar${revealed ? ' shown' : ''}`}>
         <div className="row">

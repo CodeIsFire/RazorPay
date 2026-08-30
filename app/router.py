@@ -254,6 +254,19 @@ def route_exception(conn: sqlite3.Connection, exception_row: dict, executor: Pay
     return {"decision": "dispatched", "action_type": action_type, "idempotency_key": idempotency_key}
 
 
+def _routable_rows(conn: sqlite3.Connection) -> list[sqlite3.Row]:
+    """The rows a routing pass considers. Shared by the real pass and the
+    preview so the two can never disagree about what is in scope.
+
+    age_days is measured from exceptions.created_at, NOT the transaction's
+    occurred_at that analytics.py uses -- the bound this feeds is "how long
+    have we been retrying", not "how old is the money"."""
+    return conn.execute(
+        """SELECT *, (julianday('now') - julianday(created_at)) AS age_days
+           FROM exceptions WHERE status = 'open'"""
+    ).fetchall()
+
+
 def route_open_exceptions(conn: sqlite3.Connection, executor: PayoutExecutor | None = None) -> dict:
     """Runs route_exception over every exception still eligible for action.
     Safe to call repeatedly -- already-resolved/abandoned/pending rows are
@@ -261,10 +274,7 @@ def route_open_exceptions(conn: sqlite3.Connection, executor: PayoutExecutor | N
     one-shot cause that already got its single flag dispatched is skipped
     rather than redispatched (see route_exception)."""
     executor = executor or MockPayoutExecutor()
-    rows = conn.execute(
-        """SELECT *, (julianday('now') - julianday(created_at)) AS age_days
-           FROM exceptions WHERE status = 'open'"""
-    ).fetchall()
+    rows = _routable_rows(conn)
 
     summary = {"dispatched": 0, "abandoned": 0, "skipped": 0, "error": 0}
     for row in rows:
@@ -272,6 +282,95 @@ def route_open_exceptions(conn: sqlite3.Connection, executor: PayoutExecutor | N
         summary[result["decision"]] = summary.get(result["decision"], 0) + 1
     conn.commit()
     return summary
+
+
+class _PreviewExecutor:
+    """Answers create_payout without a network call, so a preview can run the
+    real decision path. Never used outside preview_route, whose transaction is
+    rolled back -- nothing it returns is ever committed."""
+
+    def create_payout(self, *, idempotency_key: str, amount_paise: int,
+                       counterparty: str, purpose: str,
+                       payout_instruction: dict | None = None) -> dict:
+        return {"gateway_payout_id": f"preview_{idempotency_key}", "status": "processing"}
+
+
+def _copy_database_into(source: sqlite3.Connection, target: sqlite3.Connection) -> None:
+    """Clone source into target using ordinary reads.
+
+    Deliberately not sqlite3's backup() API: backup needs a read lock on the
+    source, so it BLOCKS FOREVER if the caller happens to have an open write
+    transaction. Plain SELECTs have no such problem, and they also see the
+    caller's own uncommitted rows -- which is what a preview should reflect.
+
+    Copies whatever the schema happens to contain rather than a hand-listed
+    set of tables, so a future table the router starts reading is carried over
+    without anyone remembering to add it here.
+    """
+    schema = source.execute(
+        "SELECT type, name, sql FROM sqlite_master WHERE sql IS NOT NULL"
+    ).fetchall()
+
+    for obj_type, name, sql in [(r[0], r[1], r[2]) for r in schema]:
+        if name.startswith("sqlite_"):
+            continue
+        target.execute(sql)
+        if obj_type != "table":
+            continue
+        rows = source.execute(f'SELECT * FROM "{name}"').fetchall()
+        if not rows:
+            continue
+        placeholders = ",".join("?" * len(rows[0]))
+        target.executemany(f'INSERT INTO "{name}" VALUES ({placeholders})',
+                            [tuple(r) for r in rows])
+    target.commit()
+
+
+def preview_route(conn: sqlite3.Connection) -> dict:
+    """What a routing pass WOULD do, without doing any of it.
+
+    Runs the genuine route_exception against a throwaway in-memory COPY of the
+    database. Two of the four inputs to a routing decision -- age_days, and
+    whether a previous attempt is still in flight -- exist only in the
+    database, so a preview that reimplemented the rules would drift from the
+    router the first time either changed. Running the real thing against a copy
+    cannot drift.
+
+    A copy rather than a savepoint on the live connection, because
+    route_exception commits mid-loop on two of its branches (the in-flight skip
+    and the dispatch-error path). A COMMIT releases every savepoint, so a
+    rollback would both fail and, worse, leave the writes that preceded it
+    sitting in the real audit_log. Against a copy those commits are free: the
+    connection is discarded either way and the caller's database is only ever
+    read.
+
+    Cost is one full copy of a small SQLite file per call, which is fine for
+    something a human triggers by opening a confirmation dialog. If this ever
+    goes on a hot path, that is the thing to revisit.
+    """
+    scratch = sqlite3.connect(":memory:")
+    try:
+        scratch.row_factory = sqlite3.Row
+        _copy_database_into(conn, scratch)
+
+        summary = {"dispatched": 0, "abandoned": 0, "skipped": 0, "error": 0}
+        value_paise = 0
+        for row in _routable_rows(scratch):
+            result = route_exception(scratch, dict(row), _PreviewExecutor())
+            decision = result["decision"]
+            summary[decision] = summary.get(decision, 0) + 1
+            if decision == "dispatched":
+                value_paise += row["amount_paise"]
+    finally:
+        scratch.close()
+
+    return {
+        "would_dispatch": summary["dispatched"],
+        "would_skip": summary["skipped"],
+        "would_abandon": summary["abandoned"],
+        "would_error": summary["error"],
+        "value_paise": value_paise,
+    }
 
 
 def confirm_action(conn: sqlite3.Connection, action_id: int, outcome: str) -> None:

@@ -192,6 +192,17 @@ export interface RouteResult {
   error: number
 }
 
+/** What POST /pipeline/route would do, from GET /pipeline/route/preview.
+    The server runs the real routing decisions against a throwaway copy of the
+    database, so these counts are the router's own answer, not an estimate. */
+export interface RoutePreview {
+  would_dispatch: number
+  would_skip: number
+  would_abandon: number
+  would_error: number
+  value_paise: number
+}
+
 export interface SyncPayoutsResult {
   checked: number
   confirmed: number

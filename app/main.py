@@ -23,6 +23,7 @@ from app.router import (
     MockPayoutExecutor,
     confirm_action,
     sync_payout_statuses,
+    preview_route,
     recheck_exception,
     resolve_exception,
     route_open_exceptions,
@@ -314,6 +315,16 @@ def run_route_pipeline(conn: sqlite3.Connection = Depends(get_db)) -> dict:
     executor once configured (see GET /integration/status), the mock
     otherwise."""
     return route_open_exceptions(conn, executor=get_payout_executor())
+
+
+@app.get("/pipeline/route/preview")
+def preview_route_pipeline(conn: sqlite3.Connection = Depends(get_db)) -> dict:
+    """What POST /pipeline/route would do, without doing it. Read-only: the
+    real decision path runs inside a savepoint that is always rolled back, and
+    no executor is ever reached, so this never moves money and never touches
+    the network. Backs the confirmation step in the dashboard's Run menu --
+    dispatching payouts should say how many first."""
+    return preview_route(conn)
 
 
 class ConfirmActionBody(BaseModel):

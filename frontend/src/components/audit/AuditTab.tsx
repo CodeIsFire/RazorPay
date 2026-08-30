@@ -1,4 +1,5 @@
 import { IconDownload, IconRefresh } from '@/components/icons'
+import { LoadFailed } from '@/components/LoadFailed'
 import { useToast } from '@/components/Toast'
 import { filterAudit } from '@/lib/auditFilters'
 import { exportAuditCsv } from '@/lib/csv'
@@ -33,8 +34,14 @@ export function AuditTab({ query }: { query: string }) {
               title="Refresh"
               aria-label="Refresh"
               onClick={async () => {
-                await audit.refetch()
-                toast('Activity log refreshed.')
+                // refetch() resolves with an error result rather than
+                // throwing, so an unconditional toast cheerfully reports
+                // "refreshed" over the top of a failure.
+                const r = await audit.refetch()
+                toast(
+                  r.isError ? 'Couldn’t refresh the activity log.' : 'Activity log refreshed.',
+                  r.isError,
+                )
               }}
             >
               <IconRefresh />
@@ -54,7 +61,18 @@ export function AuditTab({ query }: { query: string }) {
         </div>
 
         <div className="table-scroll" data-lenis-prevent>
-          {entries.length ? (
+          {/* Error before empty: without this ordering a failed read renders
+              "No pipeline activity yet -- open Run and start with Reconcile",
+              which invites re-running a payout-dispatching pipeline because a
+              read failed. */}
+          {audit.isError ? (
+            <LoadFailed
+              what="the activity log"
+              error={audit.error}
+              onRetry={() => audit.refetch()}
+              retrying={audit.isFetching}
+            />
+          ) : entries.length ? (
             <table>
               <thead>
                 <tr>

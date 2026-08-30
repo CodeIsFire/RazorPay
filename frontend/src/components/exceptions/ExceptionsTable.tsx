@@ -46,7 +46,10 @@ export function ExceptionsTable({
             </th>
           </tr>
         </thead>
-        <tbody>
+        {/* The id is load-bearing, not decoration: index.css scopes the row
+            cursor and the expanded-row highlight to #exceptions-body, so
+            without it clickable rows have no affordance at all. */}
+        <tbody id="exceptions-body">
           {rows.map((e) => {
             const expanded = e.exception_key === expandedKey
             const detail = formatDetail(e.detail)
@@ -57,7 +60,25 @@ export function ExceptionsTable({
                 className={`exception-row${expanded ? ' expanded' : ''}`}
                 onClick={() => onToggleExpand(e.exception_key)}
               >
-                <td className="cause">{causeLabel(e.cause)}</td>
+                {/* The row itself stays clickable for the mouse, but the
+                    keyboard needs a real control: a <tr onClick> is reachable
+                    by no key at all, which put conflict detail -- a whole
+                    feature -- out of reach. stopPropagation so activating the
+                    button doesn't also fire the row handler and cancel it. */}
+                <td className="cause">
+                  <button
+                    type="button"
+                    className="cause-toggle"
+                    aria-expanded={expanded}
+                    aria-controls={`conflict-${e.exception_key}`}
+                    onClick={(ev) => {
+                      ev.stopPropagation()
+                      onToggleExpand(e.exception_key)
+                    }}
+                  >
+                    {causeLabel(e.cause)}
+                  </button>
+                </td>
                 <td className="ref" title={e.ledger_ref ?? ''}>
                   {e.ledger_ref || '–'}
                 </td>
@@ -110,7 +131,7 @@ export function ExceptionsTable({
               expanded && (
                 <tr key={`${e.exception_key}:detail`} className="conflict-row">
                   <td colSpan={COLUMN_COUNT}>
-                    <div className="conflict-detail">
+                    <div className="conflict-detail" id={`conflict-${e.exception_key}`}>
                       <ConflictDetail exception={e} />
                     </div>
                   </td>

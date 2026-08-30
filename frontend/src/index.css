@@ -363,7 +363,8 @@
 
   .content { flex: 1; min-width: 0; overflow-y: auto; padding: 4px 28px 56px; }
   .content-inner { max-width: 1180px; }
-  .tab-panel[hidden] { display: none; }
+  /* No .tab-panel[hidden] rule: TabPanel renders only the active tab and
+     never sets the attribute, so one would match nothing. */
 
   .page-desc { font-size: var(--fs-small); color: var(--text-secondary); margin: 0 0 22px; max-width: 74ch; line-height: 1.55; }
 
@@ -544,13 +545,46 @@
      The viewBox scales to the container, and the container is never given a
      fixed height -- the x-axis band is part of the drawing, so it can't get
      cropped into its own little scrollbar. */
-  .chart-svg { width: 100%; height: auto; display: block; overflow: visible; }
-  .chart-svg .grid { stroke: var(--gridline); stroke-width: 1; }
-  .chart-svg .tick { fill: var(--text-muted); font-size: 10px; font-family: 'Inter', sans-serif; }
-  .chart-svg .seg-context { fill: var(--chart-context); }
-  .chart-svg .seg-outstanding { fill: var(--chart-bar); }
-  .chart-svg .col-hit { fill: transparent; }
-  .chart-svg .col:hover .col-hit { fill: var(--surface-hover); opacity: 0.55; }
+  /* Scoped to .tick alone, because nothing renders .chart-svg any more: the
+     migration handed the drawing to Bklit, whose container carries Tailwind
+     utilities instead. The descendant selector survived the swap and matched
+     nothing, so ValueAxis's labels fell back to the SVG default fill -- black
+     text on a near-black card. The rest of this block (.grid, .seg-context,
+     .seg-outstanding, .col-hit) belonged to the hand-built SVG chart and has
+     no elements left at all; it is gone rather than rescoped. */
+  .tick { fill: var(--text-muted); font-size: 10px; font-family: 'Inter', sans-serif; }
+
+  /* ---------- confirmation modal ----------
+     Used by exactly one thing: the step before Route dispatches real payouts.
+     It sits above the chat panel and the toast (z-index 35 and 40) because it
+     is asking a question nothing else may cover. */
+  .modal-scrim {
+    position: fixed; inset: 0; z-index: 50;
+    background: rgba(0,0,0,0.62);
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal {
+    background: var(--surface-1); border: 1px solid var(--border-strong);
+    border-radius: 14px; box-shadow: var(--shadow);
+    max-width: 460px; width: 100%; padding: 20px;
+  }
+  .modal-title { font-size: var(--fs-title); font-weight: 600; margin-bottom: 10px; }
+  .modal-body { font-size: var(--fs-small); color: var(--text-secondary); line-height: 1.6; }
+  .modal-body p { margin: 0 0 10px; }
+  .modal-body b { color: var(--text-primary); font-variant-numeric: tabular-nums; }
+  .modal-list { margin: 0; padding-left: 18px; }
+  .modal-list li { margin-bottom: 4px; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+  /* The one destructive button in the app. Red rather than the brand yellow,
+     which is spent on Run -- the thing being confirmed is not the same kind of
+     act as the thing that opened the menu. */
+  /* button.btn-danger, not .btn-danger: the base rule above is `button.btn`,
+     which is element+class and outranks a lone class no matter what order
+     they appear in. A plain .btn-danger silently lost and the destructive
+     button rendered identically to Cancel. */
+  button.btn-danger { background: var(--red); border-color: var(--red); color: #fff; }
+  button.btn-danger:hover:not(:disabled) { background: #ff6b7c; border-color: #ff6b7c; }
+  button.btn-danger:disabled { opacity: .5; cursor: default; }
 
   /* ---------- notice ---------- */
   .notice {
@@ -616,6 +650,14 @@
   tbody tr { transition: background .1s ease; }
   tbody tr:hover { background: var(--surface-hover); }
   td.cause { white-space: nowrap; font-weight: 500; }
+  /* The keyboard's way into conflict detail. Styled to read as the cause text
+     it replaces rather than as a button -- the row already signals that it
+     opens, and a second visible control in every row would be noise. The
+     focus ring is what reveals it to whoever needs it. */
+  .cause-toggle {
+    background: none; border: 0; padding: 0; margin: 0;
+    font: inherit; color: inherit; cursor: pointer; text-align: left;
+  }
   td.ts, td.ref { color: var(--text-muted); white-space: nowrap; font-variant-numeric: tabular-nums; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: var(--fs-small); }
   /* A batch row's ledger_ref is a comma-joined list of every ledger row in
      the batch, which would otherwise stretch the column past the viewport --
@@ -630,6 +672,25 @@
   #tab-audit td.ref { max-width: 300px; }
   #tab-audit td.detail { max-width: 480px; }
   .empty { padding: 40px 20px; text-align: center; color: var(--text-muted); font-size: var(--fs-small); }
+
+  /* A failed read, styled so it cannot be mistaken for the muted, centred
+     .empty above -- it is left-aligned, carries the alarm hue and sits on a
+     tinted panel, because "we don't know" and "there is nothing" must never
+     look alike on a page that dispatches payouts. */
+  .load-failed {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+    padding: 20px; margin: 4px 0;
+    background: var(--red-bg); border: 1px solid var(--red); border-radius: 10px;
+  }
+  .load-failed .lf-head { font-size: var(--fs-body); font-weight: 600; color: var(--text-primary); }
+  .load-failed .lf-detail {
+    font-size: var(--fs-small); color: var(--text-secondary);
+    font-family: 'IBM Plex Mono', ui-monospace, monospace; overflow-wrap: anywhere;
+  }
+  .load-failed .lf-note { font-size: var(--fs-small); color: var(--text-secondary); }
+  /* nowrap because the flex column above sets align-items: flex-start, which
+     shrink-wraps the button and folded "Try again" onto two lines. */
+  .load-failed .btn { margin-top: 4px; white-space: nowrap; }
 
   /* Nine columns overflow at most window widths, and the row's two actions
      are the one thing that must never scroll out of reach -- pin them to the

@@ -9,6 +9,7 @@ import type {
   Funnel,
   IntegrationStatus,
   ReconcileResult,
+  RoutePreview,
   RouteResult,
   SyncPayoutsResult,
 } from './types'
@@ -72,6 +73,7 @@ export const api = {
   reconcile: (actualSource: 'gateway' | 'bank_statement' = 'gateway') =>
     post<ReconcileResult>(`/pipeline/reconcile?actual_source=${actualSource}`),
   route: () => post<RouteResult>('/pipeline/route'),
+  routePreview: () => request<RoutePreview>('/pipeline/route/preview'),
   syncPayouts: () => post<SyncPayoutsResult>('/pipeline/sync-payouts'),
 
   resolveException: (key: string, note = 'resolved from dashboard') =>

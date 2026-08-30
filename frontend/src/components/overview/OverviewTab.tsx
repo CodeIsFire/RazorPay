@@ -1,4 +1,5 @@
 import { IconRefresh } from '@/components/icons'
+import { LoadFailed } from '@/components/LoadFailed'
 import { GapHero } from '@/components/overview/GapHero'
 import { RecentActivity } from '@/components/overview/RecentActivity'
 import { useToast } from '@/components/Toast'
@@ -50,8 +51,12 @@ export function OverviewTab({ onNavigate }: { onNavigate: (tab: TabId) => void }
   const toast = useToast()
 
   async function refresh() {
-    await Promise.all([funnel.refetch(), daily.refetch(), audit.refetch()])
-    toast('Overview refreshed.')
+    // refetch() reports failure in its result rather than by throwing, so
+    // these have to be inspected -- otherwise a refresh that fetched nothing
+    // still says "refreshed".
+    const results = await Promise.all([funnel.refetch(), daily.refetch(), audit.refetch()])
+    const failed = results.some((r) => r.isError)
+    toast(failed ? 'Couldn’t refresh the overview.' : 'Overview refreshed.', failed)
   }
 
   return (
@@ -61,11 +66,25 @@ export function OverviewTab({ onNavigate }: { onNavigate: (tab: TabId) => void }
         statement, then works the difference over the Payouts API.
       </p>
 
-      <GapHero
-        funnel={funnel.data}
-        days={daily.data?.days ?? []}
-        onOpenExceptions={() => onNavigate('exceptions')}
-      />
+      {/* The hero renders '–' for missing data, which reads as a real zero --
+          "nothing is unreconciled" is the opposite of "we could not ask". */}
+      {funnel.isError || daily.isError ? (
+        <LoadFailed
+          what="the reconciliation totals"
+          error={funnel.error ?? daily.error}
+          onRetry={() => {
+            void funnel.refetch()
+            void daily.refetch()
+          }}
+          retrying={funnel.isFetching || daily.isFetching}
+        />
+      ) : (
+        <GapHero
+          funnel={funnel.data}
+          days={daily.data?.days ?? []}
+          onOpenExceptions={() => onNavigate('exceptions')}
+        />
+      )}
 
       <ModeNotice />
 
@@ -79,6 +98,14 @@ export function OverviewTab({ onNavigate }: { onNavigate: (tab: TabId) => void }
           </button>
         </div>
         <div className="card-body">
+          {funnel.isError && (
+            <LoadFailed
+              what="the reconciliation summary"
+              error={funnel.error}
+              onRetry={() => funnel.refetch()}
+              retrying={funnel.isFetching}
+            />
+          )}
           <div className="kv-row">
             <div className="k">Match rate</div>
             <div className="v">
@@ -102,7 +129,18 @@ export function OverviewTab({ onNavigate }: { onNavigate: (tab: TabId) => void }
         </div>
       </div>
 
-      <RecentActivity entries={audit.data?.entries ?? []} onViewAll={() => onNavigate('audit')} />
+      {/* Same trap as the Activity log tab: an empty stream here reads as
+          "the pipeline has not run", which is an invitation to run it. */}
+      {audit.isError ? (
+        <LoadFailed
+          what="recent activity"
+          error={audit.error}
+          onRetry={() => audit.refetch()}
+          retrying={audit.isFetching}
+        />
+      ) : (
+        <RecentActivity entries={audit.data?.entries ?? []} onViewAll={() => onNavigate('audit')} />
+      )}
     </>
   )
 }

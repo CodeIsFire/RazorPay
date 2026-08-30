@@ -10,8 +10,14 @@ import type { CauseBucket, ExceptionRecord } from '@/lib/types'
    abandonment bound.
 
    D3 drew these in the version this replaces, but only for its keyed join and
-   width tween. React's reconciliation is the join, and the width transition
-   lives in the stylesheet, so the dependency buys nothing here. */
+   width tween. React's reconciliation is the join, so the dependency buys
+   nothing here.
+
+   The tween did not survive, and is deliberately not being restored: these
+   bars size by width, and animating width is a layout animation on every
+   frame for every row. The bars snap when the 15s poll changes them. If that
+   ever needs softening, it wants a transform on a full-width fill, not a
+   width transition. */
 
 export interface BarRow {
   key: string

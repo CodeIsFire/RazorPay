@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ExceptionFilters } from '@/components/exceptions/ExceptionFilters'
 import { ExceptionsTable } from '@/components/exceptions/ExceptionsTable'
 import { IconDownload, IconRefresh } from '@/components/icons'
+import { LoadFailed } from '@/components/LoadFailed'
 import { useToast } from '@/components/Toast'
 import { ApiError } from '@/lib/api'
 import { exportExceptionsCsv } from '@/lib/csv'
@@ -91,8 +92,13 @@ export function ExceptionsTab({ query }: { query: string }) {
               title="Refresh"
               aria-label="Refresh"
               onClick={async () => {
-                await exceptions.refetch()
-                toast('Needs attention refreshed.')
+                const r = await exceptions.refetch()
+                toast(
+                  r.isError
+                    ? 'Couldn’t refresh the exception list.'
+                    : 'Needs attention refreshed.',
+                  r.isError,
+                )
               }}
             >
               <IconRefresh />
@@ -111,6 +117,17 @@ export function ExceptionsTab({ query }: { query: string }) {
           </div>
         </div>
 
+        {/* Error before the table: "Nothing needs attention under this filter"
+            is the most dangerous sentence this app can show when the truth is
+            that the request failed. */}
+        {exceptions.isError ? (
+          <LoadFailed
+            what="the exception list"
+            error={exceptions.error}
+            onRetry={() => exceptions.refetch()}
+            retrying={exceptions.isFetching}
+          />
+        ) : (
         <ExceptionsTable
           rows={rows}
           expandedKey={expandedKey}
@@ -124,6 +141,7 @@ export function ExceptionsTab({ query }: { query: string }) {
           onResolve={(key) => act(key, resolve.mutateAsync, 'Marked processed.')}
           onRecheck={(key) => act(key, recheck.mutateAsync, 'Rechecked against the gateway.')}
         />
+        )}
       </section>
     </>
   )
