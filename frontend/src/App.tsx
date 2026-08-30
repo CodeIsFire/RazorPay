@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { ChatPanel } from '@/components/chat/ChatPanel'
 import { AuditTab } from '@/components/audit/AuditTab'
 import { ExceptionsTab } from '@/components/exceptions/ExceptionsTab'
 import { InsightsTab } from '@/components/insights/InsightsTab'
@@ -63,6 +64,7 @@ function Dashboard() {
           </main>
         </div>
       </div>
+      <ChatPanel />
     </>
   )
 }

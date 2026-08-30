@@ -73,10 +73,11 @@ export const IconClose = (p: IconProps) => (
   </svg>
 )
 
+/** A headset, not a question mark: this opens a support conversation. */
 export const IconHelp = (p: IconProps) => (
   <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" {...p}>
-    <circle cx="10" cy="10" r="7.2" stroke="currentColor" strokeWidth="1.6" />
-    <path d="M8.1 8a2 2 0 1 1 2.5 2c-.5.2-.7.6-.7 1.1v.4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-    <path d="M10 14.2v.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    <path d="M4 12v-2a6 6 0 0 1 12 0v2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    <rect x="2.5" y="11" width="3.4" height="5" rx="1.7" stroke="currentColor" strokeWidth="1.7" />
+    <rect x="14.1" y="11" width="3.4" height="5" rx="1.7" stroke="currentColor" strokeWidth="1.7" />
   </svg>
 )
