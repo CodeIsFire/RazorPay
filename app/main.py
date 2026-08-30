@@ -403,6 +403,17 @@ def assistant_chat(body: AssistantChatBody, request: Request,
 
 
 # Dashboard UI. Mounted last, after every explicit API route above, so those
-# routes always match first -- this mount is purely a catch-all serving
-# app/static/index.html at "/" and any other static assets under it.
-app.mount("/", StaticFiles(directory="app/static", html=True), name="dashboard")
+# routes always match first -- this mount is purely a catch-all serving the
+# built dashboard at "/" and its hashed assets underneath.
+#
+# check_dir=False because this directory is a BUILD OUTPUT (frontend/,
+# `npm run build`) and is gitignored: on a fresh clone it does not exist yet.
+# StaticFiles checks for it at import time by default, so leaving that on made
+# `from app.main import app` raise -- taking the API and the entire test suite
+# down with it over a missing frontend build. Now an unbuilt checkout serves
+# 404 at "/" and a fully working API everywhere else.
+app.mount(
+    "/",
+    StaticFiles(directory="app/static/dist", html=True, check_dir=False),
+    name="dashboard",
+)

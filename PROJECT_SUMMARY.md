@@ -9,7 +9,12 @@ match RazorpayX's own product (own branding, not a copy of their logo).
 **Stack:** Python + FastAPI + SQLite (stdlib `sqlite3`, no ORM, no
 migrations — schema changes mean deleting the dev DB file and reloading
 fixtures). `httpx` for direct RazorpayX REST calls (the official SDK lacks
-Payout/Contact resources).
+Payout/Contact resources). Dashboard is React + Vite + Tailwind v4 + shadcn
+(`frontend/`), built into `app/static/dist` and served by FastAPI itself.
+
+**Running it:** `npm --prefix frontend run build` once, then
+`uvicorn app.main:app`. The build output is gitignored, so a fresh clone has
+no UI until you build — the API and the test suite work regardless.
 
 ## Pipeline
 
@@ -80,7 +85,11 @@ app/
   live_executor.py       real PayoutExecutor impl (mock swaps in when unconfigured)
   webhooks.py            HMAC signature verification, payout.processed/reversed
   main.py                 FastAPI app + all routes
-  static/index.html       dashboard: vanilla JS, no build step, no external CDN
+  static/dist/            dashboard build output, served at "/" (gitignored)
+frontend/               dashboard source: React + Vite + Tailwind v4 + shadcn,
+                          with Bklit (charts), Kokonut UI and Motion.
+                          `npm run build` writes app/static/dist.
+                          `npm run dev` serves :5173 and proxies the API to :8000.
 scripts/               fixture regen, demo data loader, live test-payee setup
 tests/                  109 tests, pytest
 data/                   sqlite db + generated fixtures (db gitignored)
