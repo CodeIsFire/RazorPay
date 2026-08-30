@@ -16,3 +16,5 @@ __pycache__/
 # that is what made it 10k lines of noise in git).
 frontend/node_modules/
 app/static/dist/
+# Vite reads this for VITE_* build-time values (see frontend/.env.example).
+frontend/.env
