@@ -1,0 +1,197 @@
+import { useMemo } from 'react'
+import { BarRows, type BarRow } from '@/components/insights/BarRows'
+import { DailyTimeline } from '@/components/insights/DailyTimeline'
+import { IconRefresh } from '@/components/icons'
+import { useToast } from '@/components/Toast'
+import { fmtPaise } from '@/lib/format'
+import { groupBacklogByCause } from '@/lib/insights'
+import { causeLabel, type TabId } from '@/lib/labels'
+import { useAnalyticsExceptions, useDaily, useExceptions } from '@/lib/queries'
+
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
+const recordTip = (name: string, amountPaise: number, count: number) =>
+  `${name} — ${fmtPaise(amountPaise)} across ${plural(count, 'record')}`
+
+/* Backlog-by-cause carries a share of total value alongside the count, which
+   the other two charts do not: it is the only one whose rows partition a
+   single whole, so "25% of value" is a real reading there and would be
+   meaningless on an age bucket or a top-8 list. */
+const causePct = (share: number) => `${(share * 100).toFixed(0)}% of value`
+
+const EMPTY = 'Nothing in the backlog — everything reconciled.'
+
+export function InsightsTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
+  const analytics = useAnalyticsExceptions()
+  const daily = useDaily()
+  const exceptions = useExceptions()
+  const toast = useToast()
+
+  const a = analytics.data
+  const records = useMemo(
+    () => groupBacklogByCause(exceptions.data?.entries ?? []),
+    [exceptions.data],
+  )
+
+  const pastBound = a?.by_age.find((b) => b.past_bound) ?? { count: 0, amount_paise: 0 }
+
+  const causeRows: BarRow[] = (a?.by_cause ?? []).map((c) => ({
+    key: c.cause,
+    label: causeLabel(c.cause),
+    amountPaise: c.amount_paise,
+    value: fmtPaise(c.amount_paise),
+    sub: `${c.count} · ${causePct(c.share)}`,
+    title: recordTip(causeLabel(c.cause), c.amount_paise, c.count),
+  }))
+
+  const ageRows: BarRow[] = (a?.by_age ?? []).map((b) => ({
+    key: b.bucket,
+    label: b.bucket,
+    amountPaise: b.amount_paise,
+    value: fmtPaise(b.amount_paise),
+    sub: plural(b.count, 'record'),
+    // A bucket can be past the bound with nothing in it; colouring an empty
+    // bar red would raise an alarm about no money at all.
+    alarm: b.past_bound && b.count > 0,
+    title: recordTip(b.bucket, b.amount_paise, b.count),
+  }))
+
+  const counterpartyRows: BarRow[] = (a?.top_counterparties ?? []).map((c) => ({
+    key: c.counterparty,
+    label: c.counterparty,
+    amountPaise: c.amount_paise,
+    value: fmtPaise(c.amount_paise),
+    sub: plural(c.count, 'record'),
+    title: recordTip(c.counterparty, c.amount_paise, c.count),
+  }))
+
+  return (
+    <>
+      <p className="page-desc">
+        Where the unreconciled money actually sits. Ages are measured from when the payout
+        occurred, not from when the pipeline last ran.
+      </p>
+
+      <div className="kpi-row">
+        <div className="tile">
+          <div className="label">Value at risk</div>
+          <div className="value">{a ? fmtPaise(a.value_at_risk_paise) : '–'}</div>
+        </div>
+        <div className="tile">
+          <div className="label">Records in backlog</div>
+          <div className="value">{a ? a.exception_count : '–'}</div>
+        </div>
+        <button
+          className="tile clickable"
+          onClick={() => onNavigate('exceptions')}
+          title={
+            pastBound.count
+              ? `${fmtPaise(pastBound.amount_paise)} has been unreconciled longer than the router's ${a?.max_exception_age_days}-day retry window`
+              : 'Nothing has aged past the retry window'
+          }
+        >
+          <div className="label">
+            {a ? `Older than ${a.max_exception_age_days} days` : 'Past the retry window'}
+          </div>
+          <div className={`value${pastBound.count > 0 ? ' attention' : ''}`}>
+            {a ? pastBound.count : '–'}
+          </div>
+        </button>
+      </div>
+
+      <div className="card">
+        <div className="card-head">
+          <div>
+            <div className="title">Backlog by cause</div>
+            <div className="sub">
+              Ranked by money held up, not by how many records there are — six small duplicates
+              matter less than one large failed payout.
+            </div>
+          </div>
+          <button
+            className="btn icon-btn"
+            title="Refresh"
+            aria-label="Refresh"
+            onClick={async () => {
+              await Promise.all([analytics.refetch(), daily.refetch(), exceptions.refetch()])
+              toast('Insights refreshed.')
+            }}
+          >
+            <IconRefresh />
+          </button>
+        </div>
+        <div className="card-body">
+          <BarRows
+            rows={causeRows}
+            empty={EMPTY}
+            recordsByCause={records}
+            buckets={a?.by_cause}
+          />
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-head">
+          <div>
+            <div className="title">Where the stuck money came from</div>
+            <div className="sub">
+              Ledger value per business day. The lit portion is what still hasn't reconciled — it
+              shows which days' payouts are actually holding things up.
+            </div>
+          </div>
+        </div>
+        <div className="card-body">
+          <DailyTimeline days={daily.data?.days ?? []} />
+          <div className="chart-legend">
+            <span className="item">
+              <span className="swatch" style={{ background: 'var(--chart-bar)' }} />
+              Still outstanding
+            </span>
+            <span className="item">
+              <span className="swatch" style={{ background: 'var(--chart-context)' }} />
+              Reconciled
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="chart-grid">
+        <div className="card">
+          <div className="card-head">
+            <div>
+              <div className="title">How long it has been sitting</div>
+              <div className="sub">
+                Time since the payout occurred.
+                {a && ` The router stops retrying after ${a.max_exception_age_days} days.`}
+              </div>
+            </div>
+          </div>
+          <div className="card-body">
+            <BarRows rows={ageRows} empty={EMPTY} />
+            <div className="chart-legend">
+              <span className="item">
+                <span className="swatch" style={{ background: 'var(--chart-bar)' }} />
+                Within the retry window
+              </span>
+              <span className="item">
+                <span className="swatch" style={{ background: 'var(--chart-alarm)' }} />
+                Past it — the router abandons these
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="card-head">
+            <div>
+              <div className="title">Counterparties to chase</div>
+              <div className="sub">Payees with the most money held up.</div>
+            </div>
+          </div>
+          <div className="card-body">
+            <BarRows rows={counterpartyRows} empty={EMPTY} />
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}

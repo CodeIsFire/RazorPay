@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { AuditTab } from '@/components/audit/AuditTab'
 import { ExceptionsTab } from '@/components/exceptions/ExceptionsTab'
+import { InsightsTab } from '@/components/insights/InsightsTab'
 import { OverviewTab } from '@/components/overview/OverviewTab'
 import { RailNav } from '@/components/nav/RailNav'
 import { SidebarNav } from '@/components/nav/SidebarNav'
@@ -26,7 +27,7 @@ function TabContent({
     case 'exceptions':
       return <ExceptionsTab query={query} />
     case 'insights':
-      return <p className="page-desc">Insights — porting next.</p>
+      return <InsightsTab onNavigate={onNavigate} />
     case 'audit':
       return <AuditTab query={query} />
   }
