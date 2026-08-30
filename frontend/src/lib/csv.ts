@@ -24,8 +24,9 @@ function downloadCSV(filename: string, headers: string[], rows: (string | number
 
 export function exportExceptionsCsv(all: ExceptionRecord[]) {
   downloadCSV(
-    'exceptions.csv',
-    ['Cause', 'Ledger Ref', 'UTR/Payout ID', 'Amount (INR)', 'Status', 'Retries', 'Detail', 'Updated'],
+    'needs-attention.csv',
+    // Labels head the columns; cells keep the API's own values below.
+    ['Cause', 'Ledger Ref', 'UTR / Payout ID', 'Amount (INR)', 'Status', 'Retries', 'Detail', 'Updated'],
     all.map((e) => [
       e.cause,
       e.ledger_ref ?? '',

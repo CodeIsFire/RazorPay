@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { ExceptionsTab } from '@/components/exceptions/ExceptionsTab'
 import { OverviewTab } from '@/components/overview/OverviewTab'
 import { RailNav } from '@/components/nav/RailNav'
 import { SidebarNav } from '@/components/nav/SidebarNav'
@@ -9,12 +10,20 @@ import { useActiveTab } from '@/hooks/useActiveTab'
 import { useLenis } from '@/hooks/useLenis'
 import type { TabId } from '@/lib/labels'
 
-function TabContent({ tab, onNavigate }: { tab: TabId; onNavigate: (tab: TabId) => void }) {
+function TabContent({
+  tab,
+  onNavigate,
+  query,
+}: {
+  tab: TabId
+  onNavigate: (tab: TabId) => void
+  query: string
+}) {
   switch (tab) {
     case 'overview':
       return <OverviewTab onNavigate={onNavigate} />
     case 'exceptions':
-      return <p className="page-desc">Needs attention — porting next.</p>
+      return <ExceptionsTab query={query} />
     case 'insights':
       return <p className="page-desc">Insights — porting next.</p>
     case 'audit':
@@ -46,7 +55,7 @@ function Dashboard() {
           <main className="content" ref={contentRef}>
             <div className="content-inner" ref={contentInnerRef}>
               <TabPanel tab={activeTab}>
-                <TabContent tab={activeTab} onNavigate={selectTab} />
+                <TabContent tab={activeTab} onNavigate={selectTab} query={query} />
               </TabPanel>
             </div>
           </main>
