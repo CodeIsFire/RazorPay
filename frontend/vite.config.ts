@@ -1,6 +1,6 @@
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config'
 
 // Every backend route the browser calls, proxied to uvicorn in dev so the app
 // only ever talks to one origin (the backend configures no CORS, and in
@@ -31,5 +31,10 @@ export default defineConfig({
   build: {
     outDir: '../app/static/dist',
     emptyOutDir: true,
+  },
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['./src/test/setup.ts'],
+    globals: true,
   },
 })

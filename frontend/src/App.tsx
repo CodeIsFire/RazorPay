@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { OverviewTab } from '@/components/overview/OverviewTab'
 import { RailNav } from '@/components/nav/RailNav'
 import { SidebarNav } from '@/components/nav/SidebarNav'
 import { TabPanel } from '@/components/TabPanel'
@@ -8,10 +9,10 @@ import { useActiveTab } from '@/hooks/useActiveTab'
 import { useLenis } from '@/hooks/useLenis'
 import type { TabId } from '@/lib/labels'
 
-function TabContent({ tab }: { tab: TabId }) {
+function TabContent({ tab, onNavigate }: { tab: TabId; onNavigate: (tab: TabId) => void }) {
   switch (tab) {
     case 'overview':
-      return <p className="page-desc">Overview — porting next.</p>
+      return <OverviewTab onNavigate={onNavigate} />
     case 'exceptions':
       return <p className="page-desc">Needs attention — porting next.</p>
     case 'insights':
@@ -45,7 +46,7 @@ function Dashboard() {
           <main className="content" ref={contentRef}>
             <div className="content-inner" ref={contentInnerRef}>
               <TabPanel tab={activeTab}>
-                <TabContent tab={activeTab} />
+                <TabContent tab={activeTab} onNavigate={selectTab} />
               </TabPanel>
             </div>
           </main>
