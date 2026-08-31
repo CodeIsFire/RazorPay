@@ -5,7 +5,19 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-load_dotenv()
+# override=True, deliberately. python-dotenv defaults to letting an existing
+# environment variable win, and that cost real debugging time here: a stale
+# `export GEMINI_API_KEY=AIzaSyYourKeyHere` left in a developer's ~/.zshrc
+# silently shadowed the real key in .env, and the only symptom was the provider
+# replying "API key not valid" -- which reads as a bad key, not as the wrong
+# key being sent. Nothing distinguishes the two from the error alone.
+#
+# Every value in this project's .env is project-scoped, and writing one there
+# is a deliberate statement about THIS app; an inherited shell export is
+# ambient and, as demonstrated, frequently stale. So the file wins. Anyone
+# genuinely wanting a one-off override can edit .env or pass the value at the
+# call site, both of which are visible rather than invisible.
+load_dotenv(override=True)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
@@ -111,3 +123,38 @@ ASSISTANT_INJECTION_CUTOFF = float(os.getenv("RR_ASSISTANT_INJECTION_CUTOFF", "0
 # watched payout on every pass, so an unbounded set would grow the per-pass cost
 # with every settlement. 0 restores the old behaviour: in-flight payouts only.
 SYNC_REVERSAL_WINDOW_DAYS = int(os.getenv("RR_SYNC_REVERSAL_WINDOW_DAYS", "7"))
+
+# --- AI cause classifier ---------------------------------------------------
+# A second model, on the Anthropic Messages API rather than Groq, used only to
+# classify exception causes -- never to choose or dispatch an action. It is
+# measured head-to-head against the deterministic rules in classify.py by
+# app/evaluation.py; see app/stress_fixtures.py for why the comparison is run
+# against adversarial cases rather than the standard fixture.
+#
+# Absent key = the classifier is off and every rules-side number still
+# reproduces, the same opt-in shape as GROQ_API_KEY and the live executor. That
+# is a requirement, not a convenience: the submission repo is public and a
+# reviewer with no keys at all has to be able to run the evaluation.
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-opus-5")
+# Overridable so the same client works against api.anthropic.com or a
+# compatible gateway without a code change.
+ANTHROPIC_BASE_URL = os.getenv("ANTHROPIC_BASE_URL", "https://api.anthropic.com")
+# Below this the model's own stated confidence is treated as "don't know" and
+# the row is left to the rules. Abstaining is the behaviour we want from a
+# classifier that is wrong in a different way than the rules are -- a confident
+# wrong cause is worse than no cause, because a cause is what picks the action.
+AI_CLASSIFIER_MIN_CONFIDENCE = float(os.getenv("RR_AI_CLASSIFIER_MIN_CONFIDENCE", "0.6"))
+
+# Gemini, the classifier's current provider. Same opt-in contract as every
+# other credential here: absent key = the classifier is off and every
+# rules-side number still reproduces.
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_BASE_URL = os.getenv("GEMINI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta")
+
+# Which provider the classifier asks. Named rather than inferred from whichever
+# key happens to be set, because two are set in this project and silently
+# picking one would make an evaluation result depend on environment ordering --
+# the reported number has to say which model produced it.
+AI_CLASSIFIER_PROVIDER = os.getenv("RR_AI_CLASSIFIER_PROVIDER", "gemini")
