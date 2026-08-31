@@ -2,11 +2,11 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "recon-recover",
-      "runtimeExecutable": ".venv/bin/python",
-      "runtimeArgs": ["-m", "uvicorn", "app.main:app", "--reload", "--port", "8000"],
-      "port": 8000,
-      "autoPort": false
+      "name": "frontend",
+      "runtimeExecutable": "/Users/aaditya/.local/node/bin/npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "/Users/aaditya/Desktop/RazorPay/recon-recover/frontend",
+      "port": 5173
     }
   ]
 }

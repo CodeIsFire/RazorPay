@@ -23,6 +23,7 @@ from app.router import (
     MockPayoutExecutor,
     confirm_action,
     sync_payout_statuses,
+    preview_route,
     recheck_exception,
     resolve_exception,
     route_open_exceptions,
@@ -112,6 +113,50 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Reconcile -> Recover", lifespan=lifespan)
+
+
+# This page renders bank references and can dispatch payouts, so it says out
+# loud what is allowed to load and where it may talk to. Until now there was no
+# CSP at all, which is precisely why the old dashboard refused to load d3 or
+# Lenis from a CDN and vendored them same-origin instead.
+#
+# Each directive, and why it is shaped this way:
+#   script-src 'self'    nothing third-party executes here, full stop. The
+#                        analytics SDK is bundled into our own JS rather than
+#                        loaded from openpanel.dev for exactly this reason.
+#   connect-src          our own API, plus OpenPanel's ingest host and nothing
+#                        else -- so this is also the list of places data can go.
+#   style-src            'unsafe-inline' is load-bearing, not laziness: React
+#                        writes inline style attributes throughout (bar widths,
+#                        chart geometry), and CSP counts those as inline styles.
+#                        Google Fonts serves the Inter/IBM Plex Mono stylesheet.
+#   font-src             where those two faces are actually fetched from.
+#   img-src data:        inline SVG/data URIs only; no remote images are used.
+CONTENT_SECURITY_POLICY = "; ".join(
+    [
+        "default-src 'self'",
+        "script-src 'self'",
+        "connect-src 'self' https://api.openpanel.dev",
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+        "font-src 'self' https://fonts.gstatic.com",
+        "img-src 'self' data:",
+        "object-src 'none'",
+        "base-uri 'self'",
+        "frame-ancestors 'none'",
+    ]
+)
+
+
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["Content-Security-Policy"] = CONTENT_SECURITY_POLICY
+    # The dashboard is the only consumer and never frames anything or sniffs
+    # types; these two cost nothing and close off clickjacking and MIME
+    # confusion.
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "same-origin"
+    return response
 
 
 def get_db():
@@ -272,6 +317,16 @@ def run_route_pipeline(conn: sqlite3.Connection = Depends(get_db)) -> dict:
     return route_open_exceptions(conn, executor=get_payout_executor())
 
 
+@app.get("/pipeline/route/preview")
+def preview_route_pipeline(conn: sqlite3.Connection = Depends(get_db)) -> dict:
+    """What POST /pipeline/route would do, without doing it. Read-only: the
+    real decision path runs inside a savepoint that is always rolled back, and
+    no executor is ever reached, so this never moves money and never touches
+    the network. Backs the confirmation step in the dashboard's Run menu --
+    dispatching payouts should say how many first."""
+    return preview_route(conn)
+
+
 class ConfirmActionBody(BaseModel):
     outcome: str  # 'processed' | 'reversed'
 
@@ -403,6 +458,17 @@ def assistant_chat(body: AssistantChatBody, request: Request,
 
 
 # Dashboard UI. Mounted last, after every explicit API route above, so those
-# routes always match first -- this mount is purely a catch-all serving
-# app/static/index.html at "/" and any other static assets under it.
-app.mount("/", StaticFiles(directory="app/static", html=True), name="dashboard")
+# routes always match first -- this mount is purely a catch-all serving the
+# built dashboard at "/" and its hashed assets underneath.
+#
+# check_dir=False because this directory is a BUILD OUTPUT (frontend/,
+# `npm run build`) and is gitignored: on a fresh clone it does not exist yet.
+# StaticFiles checks for it at import time by default, so leaving that on made
+# `from app.main import app` raise -- taking the API and the entire test suite
+# down with it over a missing frontend build. Now an unbuilt checkout serves
+# 404 at "/" and a fully working API everywhere else.
+app.mount(
+    "/",
+    StaticFiles(directory="app/static/dist", html=True, check_dir=False),
+    name="dashboard",
+)
