@@ -1,19 +1,29 @@
-import { IconRefresh } from '@/components/icons'
 import { LoadFailed } from '@/components/LoadFailed'
+import { FlowSkeleton, GapHeroSkeleton, LogSkeleton } from '@/components/patterns/skeletons'
+import { useDelayedFlag } from '@/hooks/useDelayedFlag'
 import { GapHero } from '@/components/overview/GapHero'
+import { ReconciliationFlow } from '@/components/overview/ReconciliationFlow'
 import { RecentActivity } from '@/components/overview/RecentActivity'
 import { useToast } from '@/components/Toast'
-import { fmtPaise, fmtPct } from '@/lib/format'
-import type { TabId } from '@/lib/labels'
 import { useAudit, useDaily, useFunnel, useIntegrationStatus } from '@/lib/queries'
+import type { Navigate } from '@/App'
 
 function ModeNotice() {
   const { data } = useIntegrationStatus()
   const live = data?.executor === 'live'
 
+  /* The pill stays neutral until the executor is actually known. `data` is
+     undefined on first paint, and reading that as "not live" labelled the
+     banner "Test" before anything had been asked -- on an account routing real
+     test-mode payouts through the Payouts API, that is a claim about where
+     money goes, made from an unanswered request. Same rule the rest of this
+     dashboard follows: unknown is its own state, not a falsy one. */
+  const pill = !data ? 'pill' : live ? 'pill pill-green' : 'pill pill-orange'
+  const mode = !data ? 'Checking' : live ? 'Live' : 'Test'
+
   return (
     <div className="notice">
-      <span className={`pill ${live ? 'pill-green' : 'pill-orange'}`}>{live ? 'Live' : 'Test'}</span>
+      <span className={pill}>{mode}</span>
       <span
         title={
           data
@@ -44,11 +54,21 @@ function ModeNotice() {
   )
 }
 
-export function OverviewTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
+export function OverviewTab({ onNavigate }: { onNavigate: Navigate }) {
   const funnel = useFunnel()
   const daily = useDaily()
   const audit = useAudit()
   const toast = useToast()
+
+  /* isPending, never isFetching. isPending is true only while there is no data
+     at all, so it goes false after the first success and stays false -- which
+     means the 15s poll can never flash a skeleton over figures the operator is
+     already reading. isFetching would strobe the whole page four times a
+     minute. useDelayedFlag then suppresses the skeleton entirely for responses
+     fast enough that showing one would just be a flicker. */
+  const totalsLoading = useDelayedFlag(funnel.isPending || daily.isPending)
+  const funnelLoading = useDelayedFlag(funnel.isPending)
+  const auditLoading = useDelayedFlag(audit.isPending)
 
   async function refresh() {
     // refetch() reports failure in its result rather than by throwing, so
@@ -66,8 +86,10 @@ export function OverviewTab({ onNavigate }: { onNavigate: (tab: TabId) => void }
         statement, then works the difference over the Payouts API.
       </p>
 
-      {/* The hero renders '–' for missing data, which reads as a real zero --
-          "nothing is unreconciled" is the opposite of "we could not ask". */}
+      {/* Ordering is error -> loading -> data, and it matters in that order.
+          The hero renders '–' for missing data, which reads as a real zero --
+          "nothing is unreconciled" is the opposite of both "we could not ask"
+          and "we have not asked yet", so each gets its own treatment. */}
       {funnel.isError || daily.isError ? (
         <LoadFailed
           what="the reconciliation totals"
@@ -78,6 +100,8 @@ export function OverviewTab({ onNavigate }: { onNavigate: (tab: TabId) => void }
           }}
           retrying={funnel.isFetching || daily.isFetching}
         />
+      ) : totalsLoading ? (
+        <GapHeroSkeleton />
       ) : (
         <GapHero
           funnel={funnel.data}
@@ -88,46 +112,26 @@ export function OverviewTab({ onNavigate }: { onNavigate: (tab: TabId) => void }
 
       <ModeNotice />
 
-      <div className="card">
-        <div className="card-head">
-          <div>
-            <div className="title">Reconciliation summary</div>
-          </div>
-          <button className="btn icon-btn" title="Refresh" aria-label="Refresh" onClick={refresh}>
-            <IconRefresh />
-          </button>
-        </div>
-        <div className="card-body">
-          {funnel.isError && (
-            <LoadFailed
-              what="the reconciliation summary"
-              error={funnel.error}
-              onRetry={() => funnel.refetch()}
-              retrying={funnel.isFetching}
-            />
-          )}
-          <div className="kv-row">
-            <div className="k">Match rate</div>
-            <div className="v">
-              {fmtPct(funnel.data?.match_rate)}
-              <span className="note">
-                Reconciled ÷ transactions — how much of the ledger settled automatically, with
-                nothing raised.
-              </span>
-            </div>
-          </div>
-          <div className="kv-row">
-            <div className="k">Amount resolved</div>
-            <div className="v">
-              {funnel.data ? fmtPaise(funnel.data.amount_recovered_paise) : '–'}
-              <span className="note">
-                Sum of resolved ledger-side records — fee disputes closed, payouts retried,
-                pending updates confirmed.
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Replaces the old "Reconciliation summary" card, which spent a
+          full-width panel on two key-value rows. Match rate and amount
+          resolved are still here -- they moved into the flow's footer, beside
+          the picture they are derived from, instead of standing alone. */}
+      {funnel.isError ? (
+        <LoadFailed
+          what="the reconciliation summary"
+          error={funnel.error}
+          onRetry={() => funnel.refetch()}
+          retrying={funnel.isFetching}
+        />
+      ) : funnelLoading ? (
+        <FlowSkeleton />
+      ) : (
+        <ReconciliationFlow
+          funnel={funnel.data}
+          onOpenExceptions={() => onNavigate('exceptions')}
+          onRefresh={refresh}
+        />
+      )}
 
       {/* Same trap as the Activity log tab: an empty stream here reads as
           "the pipeline has not run", which is an invitation to run it. */}
@@ -138,6 +142,15 @@ export function OverviewTab({ onNavigate }: { onNavigate: (tab: TabId) => void }
           onRetry={() => audit.refetch()}
           retrying={audit.isFetching}
         />
+      ) : auditLoading ? (
+        <div className="card">
+          <div className="card-head">
+            <div className="title">Recent activity</div>
+          </div>
+          <div className="card-body flush">
+            <LogSkeleton />
+          </div>
+        </div>
       ) : (
         <RecentActivity entries={audit.data?.entries ?? []} onViewAll={() => onNavigate('audit')} />
       )}

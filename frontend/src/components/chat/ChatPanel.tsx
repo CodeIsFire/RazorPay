@@ -97,7 +97,19 @@ export function ChatPanel() {
                 </div>
               ))
             )}
-            {sending && <div className="chat-thinking">Thinking…</div>}
+            {sending && (
+              // The dots are decoration; the word is the message. Screen
+              // readers get "Thinking" from the label and never a stream of
+              // punctuation, and the log is already aria-live.
+              <div className="chat-thinking">
+                <span>Thinking</span>
+                <span className="chat-dots" aria-hidden="true">
+                  <i />
+                  <i />
+                  <i />
+                </span>
+              </div>
+            )}
           </div>
 
           <form className="chat-form" onSubmit={send}>
@@ -123,6 +135,7 @@ export function ChatPanel() {
         className="help-fab"
         aria-expanded={open}
         aria-controls="chat-panel"
+        aria-label="Need help?"
         title={configured ? 'Ask about your reconciliation data' : 'About this app'}
         onClick={() => {
           // Without a key the assistant cannot answer, so the button keeps
@@ -136,7 +149,10 @@ export function ChatPanel() {
         }}
       >
         <IconHelp />
-        Need help?
+        {/* Wrapped so narrow screens can drop the label and keep the icon.
+            aria-label carries the name once the text is hidden, so the control
+            never becomes an unlabelled circle. */}
+        <span className="help-fab-label">Need help?</span>
       </button>
     </>
   )

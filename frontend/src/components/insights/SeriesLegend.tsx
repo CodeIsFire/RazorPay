@@ -4,6 +4,12 @@ export interface SeriesLegendItem {
   /** Position of this series among the chart's <Bar> children -- that ordinal
       is what Bar compares against to decide whether it is the faded one. */
   seriesIndex: number
+  /** Pre-formatted total for the whole series, e.g. "₹10,84,361". Passed
+      formatted rather than as a number because only the caller knows whether
+      this series is money, a count, or something else. */
+  value?: string
+  /** Share of the series total, 0..1. Rendered as a whole percentage. */
+  share?: number
 }
 
 /* A legend that isolates. Hovering (or focusing) an entry fades the other
@@ -40,8 +46,8 @@ export function SeriesLegend({
   return (
     <div className="chart-legend">
       {items.map((item) => (
+        <span className="legend-row" key={item.label}>
         <button
-          key={item.label}
           type="button"
           className="item"
           // Pressed only describes the stuck state. A transient hover is not
@@ -62,6 +68,20 @@ export function SeriesLegend({
           />
           {item.label}
         </button>
+        {/* Sibling of the button, not a child, and deliberately so. The button's
+            accessible name must stay the series it isolates -- folding the
+            total into it would announce "Still outstanding ₹10,84,361 68%" as
+            the name of a toggle. As a sibling the figure is still read in
+            order, and the control still says exactly what it does. */}
+        {item.value && (
+          <span className="legend-figure">
+            <span className="legend-amount">{item.value}</span>
+            {item.share !== undefined && (
+              <span className="legend-share">{Math.round(item.share * 100)}%</span>
+            )}
+          </span>
+        )}
+        </span>
       ))}
     </div>
   )

@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react'
+import { StrictMode } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { GapHero } from './GapHero'
 import type { DailyRow, Funnel } from '@/lib/types'
@@ -33,6 +34,23 @@ describe('GapHero', () => {
     expect(settledSeg(container).style.width).toBe('0%')
     expect(gapBar(container).className).not.toContain('shown')
 
+    await waitFor(() => expect(settledSeg(container).style.width).toBe('60%'))
+    expect(gapBar(container).className).toContain('shown')
+  })
+
+  it('still sweeps under StrictMode, whose double-invoke cancels the first schedule', async () => {
+    // main.tsx renders the app inside <StrictMode>, which runs every effect
+    // twice: mount, cleanup, mount. The cleanup cancels the rAF chain and the
+    // timeout the first pass scheduled -- and the `seen` guard, already set to
+    // this key by that pass, makes the second pass return before it can
+    // reschedule. The reveal then never fires and the hero renders a
+    // permanently empty track. Guarding on the key must not outlive the work
+    // it was meant to dedupe.
+    const { container } = render(
+      <StrictMode>
+        <GapHero funnel={funnel} days={days} onOpenExceptions={() => {}} />
+      </StrictMode>,
+    )
     await waitFor(() => expect(settledSeg(container).style.width).toBe('60%'))
     expect(gapBar(container).className).toContain('shown')
   })

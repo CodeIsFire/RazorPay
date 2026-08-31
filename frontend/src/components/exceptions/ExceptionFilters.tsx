@@ -6,6 +6,7 @@ import type { Cause, ExceptionStatus } from '@/lib/types'
 
 const QUICK_CHIPS: [QuickFilter, string][] = [
   ['all', 'All'],
+  ['backlog', 'Backlog'],
   ['needs_action', 'Needs Action'],
   ['pending', 'Processing'],
   ['resolved', 'Processed'],

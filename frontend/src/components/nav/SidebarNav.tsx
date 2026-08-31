@@ -24,7 +24,9 @@ export function SidebarNav({
             data-tab={tab}
             role="tab"
             aria-selected={active}
-            aria-controls={`tab-${tab}`}
+            // Only while selected -- the other panels are not mounted, and
+            // aria-controls must reference a real element. See RailNav.
+            aria-controls={active ? `tab-${tab}` : undefined}
             tabIndex={active ? 0 : -1}
             onClick={() => onSelect(tab)}
           >

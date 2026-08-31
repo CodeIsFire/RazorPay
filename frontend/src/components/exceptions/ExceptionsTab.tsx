@@ -4,16 +4,49 @@ import { ExceptionsTable } from '@/components/exceptions/ExceptionsTable'
 import { IconDownload, IconRefresh } from '@/components/icons'
 import { LoadFailed } from '@/components/LoadFailed'
 import { useToast } from '@/components/Toast'
+import { useDelayedFlag } from '@/hooks/useDelayedFlag'
 import { ApiError } from '@/lib/api'
 import { exportExceptionsCsv } from '@/lib/csv'
-import { filterExceptions, type QuickFilter, type SortOrder } from '@/lib/exceptionFilters'
+import {
+  filterExceptions,
+  type QuickFilter,
+  type SortKey,
+  type SortOrder,
+} from '@/lib/exceptionFilters'
+import type { Cause } from '@/lib/types'
 import { useExceptions, useRecheckException, useResolveException } from '@/lib/queries'
 
-export function ExceptionsTab({ query }: { query: string }) {
-  const [quickFilter, setQuickFilter] = useState<QuickFilter>('all')
+export function ExceptionsTab({
+  query,
+  causeFocus,
+}: {
+  query: string
+  causeFocus?: Cause | null
+}) {
+  /* Arriving from a chart scopes the table to the backlog, because that is the
+     population the chart counted. Arriving any other way shows everything. */
+  const [quickFilter, setQuickFilter] = useState<QuickFilter>(causeFocus ? 'backlog' : 'all')
   const [statusFilter, setStatusFilter] = useState('')
-  const [causeFilter, setCauseFilter] = useState('')
+  /* Seeded from the arriving navigation rather than synced by an effect. The
+     panel is keyed on the tab id, so this component genuinely remounts on every
+     visit -- initial state is read each time you arrive, and there is no window
+     where the table has rendered unfiltered before a filter is applied. */
+  const [causeFilter, setCauseFilter] = useState<string>(causeFocus ?? '')
   const [sort, setSort] = useState<SortOrder>('desc')
+  const [sortKey, setSortKey] = useState<SortKey>('updated_at')
+
+  /* Clicking the active column flips direction; clicking a new one adopts it.
+     New columns start descending because every one of them is a "most first"
+     question -- biggest amount, most retries, latest update. Ascending is the
+     second press, not the default. */
+  function toggleSort(key: SortKey) {
+    if (key === sortKey) {
+      setSort((cur) => (cur === 'asc' ? 'desc' : 'asc'))
+      return
+    }
+    setSortKey(key)
+    setSort('desc')
+  }
   const [expandedKey, setExpandedKey] = useState<string | null>(null)
 
   const exceptions = useExceptions()
@@ -22,7 +55,10 @@ export function ExceptionsTab({ query }: { query: string }) {
   const toast = useToast()
 
   const all = exceptions.data?.entries ?? []
-  const rows = filterExceptions(all, { quickFilter, statusFilter, causeFilter, query, sort })
+  const rows = filterExceptions(all, { quickFilter, statusFilter, causeFilter, query, sort, sortKey })
+  // isPending, not isFetching: the poll must never replace rows an operator is
+  // reading with a skeleton. See the note in OverviewTab.
+  const listLoading = useDelayedFlag(exceptions.isPending)
 
   const busyKey =
     (resolve.isPending && resolve.variables) || (recheck.isPending && recheck.variables) || null
@@ -76,15 +112,9 @@ export function ExceptionsTab({ query }: { query: string }) {
             <span className="count">
               <b>{rows.length}</b> records
             </span>
-            <select
-              className="filter-select"
-              aria-label="Sort order"
-              value={sort}
-              onChange={(e) => setSort(e.target.value as SortOrder)}
-            >
-              <option value="desc">Sort: latest update first</option>
-              <option value="asc">Sort: oldest update first</option>
-            </select>
+            {/* The sort select is gone: ordering now lives on the column
+                headers, where the thing being ordered actually is. Keeping
+                both would be two controls for one piece of state. */}
           </div>
           <div className="right">
             <button
@@ -130,6 +160,10 @@ export function ExceptionsTab({ query }: { query: string }) {
         ) : (
         <ExceptionsTable
           rows={rows}
+          loading={listLoading}
+          sortKey={sortKey}
+          sort={sort}
+          onSort={toggleSort}
           expandedKey={expandedKey}
           busyKey={busyKey || null}
           emptyMessage={

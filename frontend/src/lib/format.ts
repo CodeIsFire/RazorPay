@@ -65,3 +65,23 @@ export function formatDetail(s: string | null | undefined): string {
   }
   return str.replace(/(\d+)\s*paise\b/g, (_, p) => fmtPaise(Number(p)))
 }
+
+/** A "YYYY-MM-DD" day key as "24 Aug".
+
+    UTC on purpose, and that is the whole reason this is not fmtTs: the input is
+    a DATE, not an instant. Formatting it in the local zone shifts it a day back
+    for every reader west of UTC, so a payout on the 24th would be filed under
+    the 23rd. fmtTs deliberately does the opposite -- it renders a real instant
+    in local time -- so the two are not interchangeable.
+
+    Locale is pinned rather than left to the browser so two labels for the same
+    day cannot disagree between one component and another. */
+export function fmtDay(day: string): string {
+  const parsed = new Date(`${day}T00:00:00Z`)
+  if (Number.isNaN(parsed.getTime())) return day
+  return parsed.toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    timeZone: 'UTC',
+  })
+}

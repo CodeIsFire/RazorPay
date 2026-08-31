@@ -43,7 +43,14 @@ const HEIGHT_MAX_PCT = 80;
 const DEFAULT_POINT_COUNT = 14;
 const BAR_CORNER_RADIUS = 2;
 const DEFAULT_BAR_COUNT = 12;
-const DEFAULT_FILL = "var(--foreground)";
+/* Was `var(--foreground)`, a token this app has never defined -- an unresolvable
+   var() on `fill` falls back to black, so the whole loading skeleton rendered
+   invisibly on a black page. That is why the shimmer has never been seen: it
+   was wired to a colour that does not exist. --chart-context is the palette's
+   actual de-emphasis mark (the same token the daily chart uses for "this part
+   is context"), it is themed for both light and dark, and de-emphasis is
+   precisely what a skeleton is. */
+const DEFAULT_FILL = "var(--chart-context)";
 const DEFAULT_BAR_FILL_OPACITY = 0.45;
 const LINE_STROKE_OPACITY = 0.55;
 const AREA_FILL_TOP_OPACITY = 0.18;

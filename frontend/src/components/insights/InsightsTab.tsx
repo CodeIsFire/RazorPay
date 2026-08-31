@@ -3,11 +3,14 @@ import { BarRows, type BarRow } from '@/components/insights/BarRows'
 import { DailyTimeline } from '@/components/insights/DailyTimeline'
 import { IconRefresh } from '@/components/icons'
 import { LoadFailed } from '@/components/LoadFailed'
+import { BarRowsSkeleton, TileRowSkeleton } from '@/components/patterns/skeletons'
 import { useToast } from '@/components/Toast'
+import { useDelayedFlag } from '@/hooks/useDelayedFlag'
 import { fmtPaise } from '@/lib/format'
 import { groupBacklogByCause } from '@/lib/insights'
-import { causeLabel, type TabId } from '@/lib/labels'
+import { causeLabel, isKnownCause } from '@/lib/labels'
 import { useAnalyticsExceptions, useDaily, useExceptions } from '@/lib/queries'
+import type { Navigate } from '@/App'
 
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
 const recordTip = (name: string, amountPaise: number, count: number) =>
@@ -21,13 +24,17 @@ const causePct = (share: number) => `${(share * 100).toFixed(0)}% of value`
 
 const EMPTY = 'Nothing in the backlog — everything reconciled.'
 
-export function InsightsTab({ onNavigate }: { onNavigate: (tab: TabId) => void }) {
+export function InsightsTab({ onNavigate }: { onNavigate: Navigate }) {
   const analytics = useAnalyticsExceptions()
   const daily = useDaily()
   const exceptions = useExceptions()
   const toast = useToast()
 
   const a = analytics.data
+  // The tiles and all three charts come from these two queries, so they load
+  // as one page rather than popping in independently.
+  const statsLoading = useDelayedFlag(analytics.isPending)
+  const dailyLoading = useDelayedFlag(daily.isPending)
   const records = useMemo(
     () => groupBacklogByCause(exceptions.data?.entries ?? []),
     [exceptions.data],
@@ -89,6 +96,9 @@ export function InsightsTab({ onNavigate }: { onNavigate: (tab: TabId) => void }
         />
       )}
 
+      {statsLoading ? (
+        <TileRowSkeleton />
+      ) : (
       <div className="kpi-row">
         <div className="tile">
           <div className="label">Value at risk</div>
@@ -115,6 +125,7 @@ export function InsightsTab({ onNavigate }: { onNavigate: (tab: TabId) => void }
           </div>
         </button>
       </div>
+      )}
 
       <div className="card">
         <div className="card-head">
@@ -143,12 +154,28 @@ export function InsightsTab({ onNavigate }: { onNavigate: (tab: TabId) => void }
           </button>
         </div>
         <div className="card-body">
-          <BarRows
-            rows={causeRows}
-            empty={EMPTY}
-            recordsByCause={records}
-            buckets={a?.by_cause}
-          />
+          {statsLoading ? (
+            <BarRowsSkeleton />
+          ) : (
+            /* Only this chart's rows drill through. A cause maps one-to-one
+               onto the exceptions table's own causeFilter, so the destination
+               genuinely shows the records the bar was drawn from. The other two
+               charts deliberately do not: age is derived from the transaction's
+               occurred_at, which is not on an exception row at all, and
+               counterparty lives on transactions rather than exceptions -- a
+               filter for either would land on an empty table and read as "these
+               records vanished". */
+            <BarRows
+              rows={causeRows}
+              empty={EMPTY}
+              recordsByCause={records}
+              buckets={a?.by_cause}
+              onSelect={(cause) =>
+                onNavigate('exceptions', isKnownCause(cause) ? { cause } : undefined)
+              }
+              selectHint={(row) => `Show the ${row.label.toLowerCase()} records`}
+            />
+          )}
         </div>
       </div>
 
@@ -165,11 +192,11 @@ export function InsightsTab({ onNavigate }: { onNavigate: (tab: TabId) => void }
         <div className="card-body">
           {/* The legend moved inside the chart: it drives which series is
               emphasised, so it has to share that state with the bars. */}
-          <DailyTimeline days={daily.data?.days ?? []} />
+          <DailyTimeline days={daily.data?.days ?? []} loading={dailyLoading} />
         </div>
       </div>
 
-      <div className="chart-grid">
+      <div className="insights-columns">
         <div className="card">
           <div className="card-head">
             <div>
@@ -181,7 +208,7 @@ export function InsightsTab({ onNavigate }: { onNavigate: (tab: TabId) => void }
             </div>
           </div>
           <div className="card-body">
-            <BarRows rows={ageRows} empty={EMPTY} />
+            {statsLoading ? <BarRowsSkeleton rows={4} /> : <BarRows rows={ageRows} empty={EMPTY} />}
             <div className="chart-legend">
               <span className="item">
                 <span className="swatch" style={{ background: 'var(--chart-bar)' }} />
@@ -203,7 +230,11 @@ export function InsightsTab({ onNavigate }: { onNavigate: (tab: TabId) => void }
             </div>
           </div>
           <div className="card-body">
-            <BarRows rows={counterpartyRows} empty={EMPTY} />
+            {statsLoading ? (
+              <BarRowsSkeleton rows={6} />
+            ) : (
+              <BarRows rows={counterpartyRows} empty={EMPTY} />
+            )}
           </div>
         </div>
       </div>

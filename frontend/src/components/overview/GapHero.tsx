@@ -1,59 +1,57 @@
-import { useEffect, useRef, useState } from 'react'
-import { fmtPaise } from '@/lib/format'
+import NumberFlow from '@number-flow/react'
+import { useReducedMotion } from 'motion/react'
+import { useState } from 'react'
+import {
+  OutstandingSparkline,
+  type SparkPoint,
+} from '@/components/overview/OutstandingSparkline'
+import { useFirstPaintReveal } from '@/hooks/useFirstPaintReveal'
+import { fmtDay, fmtPaise } from '@/lib/format'
 import { gapBarKey, gapBarPercents, gapTotals } from '@/lib/gap'
 import type { DailyRow, Funnel } from '@/lib/types'
 
-/* The green fill sweeps out from zero on first paint, then the orange gap
-   fades in where it stops short (both transitions live in the stylesheet).
 
-   In React the reveal has to be explicit. The vanilla version rendered the
-   segment into static HTML at width 0 and let a later JS write trigger the
-   CSS transition -- its own first-paint branch was in fact unreachable
-   (`gapRendered = key` was assigned just above the `if (gapRendered !== null)`
-   guard), and the sweep came from that HTML-then-JS ordering instead. React
-   mounts the element with its final width already applied, so nothing would
-   transition at all. Hence: mount at zero, then write the real width.
+/* Rupees, animated only where the digits actually differ.
 
-   Two guards on that, both load-bearing. A grow-from-zero started while the
-   tab is hidden can sit frozen at 0, because neither CSS transitions nor
-   rAF advance in a tab that isn't compositing -- so a hidden tab skips
-   straight to the final state. And the timeout backs up rAF for the same
-   reason; whichever lands first wins and the other is a no-op. Without them
-   the hero reads as a broken empty bar rather than an un-animated one. */
-function useRevealedWidths(settledPct: number, gapPct: number) {
-  const [revealed, setRevealed] = useState(false)
-  // Skips the reveal when the numbers merely repeat: the 15s poll must not
-  // make the bar restart every tick.
-  const seen = useRef<string | null>(null)
-  const key = gapBarKey(settledPct, gapPct)
+   @number-flow has sat in package.json unused since the migration; this is the
+   one place in the product where a figure changes under the reader's cursor, so
+   it is where a transition earns its keep -- scrubbing the sparkline should feel
+   like moving along one number, not like four separate numbers flashing.
 
-  useEffect(() => {
-    if (seen.current === key) return
-    const first = seen.current === null
-    seen.current = key
-
-    if (!first) return
-    if (document.visibilityState !== 'visible') {
-      setRevealed(true)
-      return
-    }
-    let raf1 = 0
-    let raf2 = 0
-    const settle = () => setRevealed(true)
-    raf1 = requestAnimationFrame(() => {
-      raf2 = requestAnimationFrame(settle)
-    })
-    const timer = setTimeout(settle, 120)
-    return () => {
-      cancelAnimationFrame(raf1)
-      cancelAnimationFrame(raf2)
-      clearTimeout(timer)
-    }
-  }, [key])
-
-  return revealed
+   It is given the pre-formatted string's own parts via `format`, so en-IN
+   lakh/crore grouping survives: NumberFlow's default grouping would render
+   ₹5,18,638 as ₹518,638. */
+function AnimatedAmount({ paise }: { paise: number }) {
+  const reduced = useReducedMotion()
+  if (reduced) return <>{fmtPaise(paise)}</>
+  return (
+    <NumberFlow
+      value={paise / 100}
+      /* Matched to fmtPaise exactly. These were maximumFractionDigits: 0
+         while fmtPaise uses 2, so the reduced-motion path and the animated
+         path rendered different amounts for the same figure -- ₹40,531 versus
+         ₹40,530.90 -- in the most prominent number in the product. INR's
+         currency default is 2 minimum digits, so minimum has to be pinned to
+         0 as well or whole rupees gain a ".00" fmtPaise never shows. */
+      format={{
+        style: 'currency',
+        currency: 'INR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      }}
+      locales="en-IN"
+      // Digits only; the rupee sign and separators must not slide around.
+      transformTiming={{ duration: 420, easing: 'cubic-bezier(.22,.61,.36,1)' }}
+    />
+  )
 }
 
+/* The green fill sweeps out from zero on first paint, then the orange gap fades
+   in where it stops short (both transitions live in the stylesheet). The reveal
+   mechanics -- mount at zero, skip when the tab is not compositing, never
+   replay on an unchanged poll -- now live in useFirstPaintReveal, which the
+   reconciliation flow needs too. `gapBarKey` supplies this bar's signature:
+   the widths rounded to the precision they are actually written at. */
 export function GapHero({
   funnel,
   days,
@@ -66,23 +64,28 @@ export function GapHero({
   const { expected, settled, gap } = gapTotals(days)
   const hasActivity = expected > 0
   const { settledPct, gapPct } = gapBarPercents(expected, settled, gap)
-  const revealed = useRevealedWidths(settledPct, gapPct)
+  const revealed = useFirstPaintReveal(gapBarKey(settledPct, gapPct))
 
-  const funnelBits: [number, string][] = funnel
-    ? [
-        [funnel.ingested, 'ingested'],
-        [funnel.matched, 'auto-matched'],
-        [funnel.exceptions, 'need attention'],
-        [funnel.recovered, 'resolved'],
-        [funnel.gateway_side_anomalies, 'gateway-only'],
-      ]
-    : []
+  /* The funnel counts used to trail the hero as a run of small text
+     ("66 ingested · 27 auto-matched · ..."). They now have their own card
+     below, where the same numbers are drawn as segments that visibly sum to
+     the whole. Repeating them here would say the same thing twice and dilute
+     the one figure this card exists to report. */
+
+  /* Scrubbing the sparkline retargets the headline figure to that day. The
+     hovered day is transient state only -- `gap` stays the card's real subject,
+     so leaving the chart always returns to today's total rather than stranding
+     the reader on whatever they last pointed at. */
+  const [scrubbed, setScrubbed] = useState<SparkPoint | null>(null)
+  const shownPaise = scrubbed ? scrubbed.paise : gap
 
   const note = !hasActivity
     ? 'No ledger activity yet — open Run and start with Reconcile.'
-    : gap <= 0
-      ? 'Every recorded payout has settled against the ledger.'
-      : `${funnel?.exceptions ?? 0} record${funnel?.exceptions === 1 ? '' : 's'} the recovery agent is still working.`
+    : scrubbed
+      ? `Outstanding on ${fmtDay(scrubbed.day)}`
+      : gap <= 0
+        ? 'Every recorded payout has settled against the ledger.'
+        : `${funnel?.exceptions ?? 0} record${funnel?.exceptions === 1 ? '' : 's'} the recovery agent is still working.`
 
   // No aria-label on the button below. One would REPLACE its contents as the
   // accessible name, and those contents are the headline figure this whole
@@ -94,9 +97,22 @@ export function GapHero({
       aria-describedby="gap-hero-action"
       onClick={onOpenExceptions}
     >
-      <div className="eyebrow">Unreconciled on the ledger</div>
-      <div className="figure mono">{hasActivity ? fmtPaise(gap) : '–'}</div>
-      <div className="note">{note}</div>
+      <div className="gap-hero-top">
+        <div>
+          <div className="eyebrow">Unreconciled on the ledger</div>
+          {/* The figure keeps its exact text -- fmtPaise, en-IN grouping, the
+              rupee sign -- and only the digits that change are animated. Under
+              reduced motion it renders that same string with no motion at all,
+              so the number is never withheld for the sake of an effect. */}
+          <div className="figure mono">
+            {hasActivity ? <AnimatedAmount paise={shownPaise} /> : '–'}
+          </div>
+          <div className="note">{note}</div>
+        </div>
+        {/* Fills the dead space beside the figure with the one thing the card
+            could not otherwise say: which way this number has been moving. */}
+        <OutstandingSparkline days={days} onHover={setScrubbed} />
+      </div>
       <span className="sr-only" id="gap-hero-action">
         Opens the records that need attention
       </span>
@@ -122,14 +138,6 @@ export function GapHero({
         </div>
       </div>
 
-      <div className="funnel">
-        {funnelBits.map(([n, word], i) => (
-          <span key={word}>
-            {i > 0 && ' · '}
-            <b>{n}</b> {word}
-          </span>
-        ))}
-      </div>
     </button>
   )
 }

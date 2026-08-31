@@ -88,3 +88,14 @@ export const SEARCH_PLACEHOLDERS: Partial<Record<TabId, string>> = {
   exceptions: 'Search cause, reference, detail…',
   audit: 'Search event, actor, detail…',
 }
+
+/** Whether a string is a cause this frontend knows how to filter by.
+
+    Guards the drill-through from charts: an unchecked cast would let a cause
+    the backend added but this build has not land in causeFilter, matching no
+    row, and the table would render "nothing needs attention" -- which is the
+    exact "these records vanished" failure the age and counterparty charts were
+    deliberately left undrillable to avoid. */
+export function isKnownCause(value: string): value is Cause {
+  return value in CAUSE_LABELS
+}

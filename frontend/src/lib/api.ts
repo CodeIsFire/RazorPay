@@ -86,6 +86,7 @@ export const api = {
       `/exceptions/${encodeURIComponent(key)}/recheck`,
     ),
 
+
   /** POST {message, history} -- the question and the transcript are separate
       fields, and the server re-validates and caps the history it is given. */
   chat: (message: string, history: ChatTurn[]) =>

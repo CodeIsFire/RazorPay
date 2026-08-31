@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { useFocusTrap, useScrollLock } from '@/hooks/useFocusTrap'
 import { fmtPaise } from '@/lib/format'
 import type { RoutePreview } from '@/lib/types'
 
@@ -38,6 +39,13 @@ export function RouteConfirm({
   useEffect(() => {
     cancelRef.current?.focus()
   }, [])
+
+  /* aria-modal only claims the page behind is inert. These make it true: Tab
+     cycles within the dialog instead of walking onto the dashboard underneath
+     while a confirmation about moving real money is still open, and the page
+     behind cannot be scrolled out from under it. */
+  useFocusTrap(dialogRef)
+  useScrollLock()
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

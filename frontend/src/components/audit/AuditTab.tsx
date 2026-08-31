@@ -1,6 +1,8 @@
 import { IconDownload, IconRefresh } from '@/components/icons'
 import { LoadFailed } from '@/components/LoadFailed'
 import { useToast } from '@/components/Toast'
+import { LoadingAnnounce, TableSkeleton } from '@/components/ui/Skeleton'
+import { useDelayedFlag } from '@/hooks/useDelayedFlag'
 import { filterAudit } from '@/lib/auditFilters'
 import { exportAuditCsv } from '@/lib/csv'
 import { fmtTs, formatDetail } from '@/lib/format'
@@ -13,6 +15,7 @@ export function AuditTab({ query }: { query: string }) {
 
   const all = audit.data?.entries ?? []
   const entries = filterAudit(all, query)
+  const logLoading = useDelayedFlag(audit.isPending)
 
   return (
     <>
@@ -72,6 +75,22 @@ export function AuditTab({ query }: { query: string }) {
               onRetry={() => audit.refetch()}
               retrying={audit.isFetching}
             />
+          ) : logLoading ? (
+            <>
+              <LoadingAnnounce what="the activity log" />
+              <table>
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Actor</th>
+                    <th>Event</th>
+                    <th>Subject</th>
+                    <th>Detail</th>
+                  </tr>
+                </thead>
+                <TableSkeleton columns={5} rows={10} />
+              </table>
+            </>
           ) : entries.length ? (
             <table>
               <thead>

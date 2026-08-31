@@ -32,6 +32,45 @@ const base: ExceptionFilters = {
   sort: 'desc',
 }
 
+describe('the backlog filter', () => {
+  // This is the population app/analytics.py counts, and the Insights charts
+  // report. A bar reading "7 records" drills through to this filter, so if the
+  // two definitions ever diverge the drill-through silently lies about how
+  // much work is outstanding.
+  const rows = [
+    rec({ status: 'open' }),
+    rec({ status: 'pending' }),
+    rec({ status: 'resolved' }),
+    rec({ status: 'abandoned' }),
+  ]
+
+  it('is every non-terminal record: open plus pending', () => {
+    const got = filterExceptions(rows, { ...base, quickFilter: 'backlog' })
+    expect(got.map((r) => r.status).sort()).toEqual(['open', 'pending'])
+  })
+
+  it('excludes both terminal states', () => {
+    const got = filterExceptions(rows, { ...base, quickFilter: 'backlog' })
+    expect(got.some((r) => r.status === 'resolved' || r.status === 'abandoned')).toBe(false)
+  })
+
+  it('is wider than needs-action, which is open only', () => {
+    const backlog = filterExceptions(rows, { ...base, quickFilter: 'backlog' })
+    const needsAction = filterExceptions(rows, { ...base, quickFilter: 'needs_action' })
+    expect(backlog.length).toBeGreaterThan(needsAction.length)
+  })
+
+  it('still yields to an explicit status select', () => {
+    // The select-wins rule has to hold for the new chip too.
+    const got = filterExceptions(rows, {
+      ...base,
+      quickFilter: 'backlog',
+      statusFilter: 'resolved',
+    })
+    expect(got.map((r) => r.status)).toEqual(['resolved'])
+  })
+})
+
 describe('quick filters', () => {
   const rows = [
     rec({ status: 'open' }),
@@ -57,6 +96,55 @@ describe('quick filters', () => {
     })
     expect(out).toHaveLength(1)
     expect(out[0].status).toBe('abandoned')
+  })
+})
+
+describe('sorting by column', () => {
+  const rows = [
+    rec({ amount_paise: 900, retry_count: 2, cause: 'duplicate', updated_at: '2026-08-20 10:00:00' }),
+    rec({ amount_paise: 100000, retry_count: 0, cause: 'chargeback', updated_at: '2026-08-22 10:00:00' }),
+    rec({ amount_paise: 5000, retry_count: 1, cause: 'fee_mismatch', updated_at: '2026-08-21 10:00:00' }),
+  ]
+
+  it('orders money numerically, not as text', () => {
+    // localeCompare would put 900 after 100000 -- the exact bug that makes a
+    // "largest first" sort on an amounts column useless.
+    const got = filterExceptions(rows, { ...base, sortKey: 'amount_paise', sort: 'desc' })
+    expect(got.map((r) => r.amount_paise)).toEqual([100000, 5000, 900])
+  })
+
+  it('orders retry counts numerically too', () => {
+    const got = filterExceptions(rows, { ...base, sortKey: 'retry_count', sort: 'asc' })
+    expect(got.map((r) => r.retry_count)).toEqual([0, 1, 2])
+  })
+
+  it('still defaults to newest update first when no column is given', () => {
+    const got = filterExceptions(rows, { ...base, sort: 'desc' })
+    expect(got.map((r) => r.updated_at)).toEqual([
+      '2026-08-22 10:00:00',
+      '2026-08-21 10:00:00',
+      '2026-08-20 10:00:00',
+    ])
+  })
+
+  it('breaks ties on updated_at so equal values do not shuffle between polls', () => {
+    const tied = [
+      rec({ cause: 'duplicate', amount_paise: 100, updated_at: '2026-08-20 10:00:00' }),
+      rec({ cause: 'duplicate', amount_paise: 100, updated_at: '2026-08-24 10:00:00' }),
+      rec({ cause: 'duplicate', amount_paise: 100, updated_at: '2026-08-22 10:00:00' }),
+    ]
+    const got = filterExceptions(tied, { ...base, sortKey: 'cause', sort: 'desc' })
+    expect(got.map((r) => r.updated_at)).toEqual([
+      '2026-08-24 10:00:00',
+      '2026-08-22 10:00:00',
+      '2026-08-20 10:00:00',
+    ])
+  })
+
+  it('does not mutate the source array', () => {
+    const before = rows.map((r) => r.id)
+    filterExceptions(rows, { ...base, sortKey: 'amount_paise', sort: 'asc' })
+    expect(rows.map((r) => r.id)).toEqual(before)
   })
 })
 

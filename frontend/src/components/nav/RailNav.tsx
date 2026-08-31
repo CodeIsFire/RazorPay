@@ -45,7 +45,13 @@ export function RailNav({
               data-tab={tab}
               role="tab"
               aria-selected={active}
-              aria-controls={`tab-${tab}`}
+              /* Only the selected tab points at a panel. TabPanel renders one
+                 panel at a time on purpose -- unmounting the outgoing tab is
+                 what stops background tabs polling -- so the other three ids
+                 do not exist in the document, and aria-controls is required to
+                 reference an element that does. Pointing at nothing is worse
+                 than not pointing. */
+              aria-controls={active ? `tab-${tab}` : undefined}
               // Only the focused tab is in the tab order; arrows move between
               // them. Without this every rail item is its own tab stop.
               tabIndex={active ? 0 : -1}
