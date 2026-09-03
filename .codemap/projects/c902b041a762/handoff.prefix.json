@@ -1,44 +1,64 @@
 {
-  "file_count": 42,
+  "file_count": 427,
   "hubs": [
     {
+      "path": "app/__init__.py",
+      "importers": 22
+    },
+    {
+      "path": "frontend/src/components/charts/chart-context.tsx",
+      "importers": 15
+    },
+    {
+      "path": "frontend/src/lib/types.ts",
+      "importers": 15
+    },
+    {
       "path": "app/db.py",
-      "importers": 10
+      "importers": 13
     },
     {
       "path": "app/config.py",
-      "importers": 9
-    },
-    {
-      "path": "app/fixtures.py",
-      "importers": 9
+      "importers": 12
     },
     {
       "path": "app/load_fixtures.py",
-      "importers": 9
+      "importers": 12
     },
     {
-      "path": "app/__init__.py",
-      "importers": 8
+      "path": "app/fixtures.py",
+      "importers": 11
     },
     {
       "path": "app/classify.py",
-      "importers": 7
+      "importers": 10
     },
     {
       "path": "app/main.py",
-      "importers": 5
-    },
-    {
-      "path": "app/reconcile.py",
-      "importers": 5
+      "importers": 8
     },
     {
       "path": "app/router.py",
-      "importers": 5
+      "importers": 8
+    },
+    {
+      "path": "app/reconcile.py",
+      "importers": 7
     },
     {
       "path": "app/funnel.py",
+      "importers": 6
+    },
+    {
+      "path": "frontend/src/components/charts/chart-phase.ts",
+      "importers": 5
+    },
+    {
+      "path": "frontend/src/components/charts/y-axis-scales.ts",
+      "importers": 5
+    },
+    {
+      "path": "app/ingest.py",
       "importers": 4
     }
   ]

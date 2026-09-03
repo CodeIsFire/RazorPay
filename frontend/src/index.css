@@ -1257,6 +1257,118 @@
   #status-toast.show { opacity: 1; transform: translateY(0); }
   #status-toast.error { border-color: var(--red); color: var(--red); }
 
+  /* ---------- data upload ---------- */
+  .upload-state { font-size: var(--fs-small); color: var(--text-secondary); margin: 0 0 var(--space-3); }
+
+  .upload-row { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+  /* The native control, tamed rather than replaced: a custom file picker
+     would have to reimplement the OS dialog, keyboard access and the chosen
+     filename, and this only needs to stop looking like 1998. */
+  .upload-row input[type="file"] { font-size: var(--fs-small); color: var(--text-secondary); max-width: 100%; }
+  .upload-row input[type="file"]::file-selector-button {
+    font: inherit; font-weight: 600; color: var(--text-primary);
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: var(--r-control); padding: 6px 12px; margin-right: 10px; cursor: pointer;
+  }
+  .upload-row input[type="file"]::file-selector-button:hover { border-color: var(--border-strong); }
+
+  /* Same alarm treatment as .load-failed, and for the same reason: a rejected
+     upload wrote nothing, and that must not read as a quiet no-op. */
+  .upload-problems {
+    margin-top: var(--space-3); padding: var(--space-3);
+    background: var(--red-bg); border: 1px solid var(--red); border-radius: var(--r-control);
+  }
+  .upload-problems > p { margin: 0 0 var(--space-2); font-size: var(--fs-small); font-weight: 600; }
+  /* Scrolls itself rather than the card: a 500-row export can fail on a lot
+     of rows, and every one of them is reported at once by design. */
+  .upload-problems table { max-height: 260px; display: block; overflow-y: auto; }
+  .upload-problems td.mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; white-space: nowrap; }
+  .upload-problems tbody td:first-child { font-variant-numeric: tabular-nums; }
+
+  /* The sentence about payouts that already moved. Weighted like body text
+     rather than a muted aside -- it is the reason to stop and read. */
+  .modal-warn {
+    margin: var(--space-3) 0 0; padding: 10px 12px;
+    background: var(--red-bg); border-left: 3px solid var(--red); border-radius: var(--r-control);
+    color: var(--text-primary); font-weight: 600;
+  }
+
+  /* ---------- landing ---------- */
+  /* The entry screen, shown on a bare URL. Full-bleed and chrome-free: no
+     rail, no sidebar, no Run menu -- the two buttons ARE the navigation, and
+     putting the dashboard's nav behind them would just make them redundant. */
+  .landing {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: var(--space-5); text-align: center;
+  }
+  .landing-inner { max-width: 56ch; display: flex; flex-direction: column; align-items: center; }
+  .landing-mark {
+    width: 46px; height: 46px; border-radius: var(--r-panel); margin-bottom: var(--space-4);
+    display: flex; align-items: center; justify-content: center;
+    background: var(--brand); color: var(--brand-ink); font-size: 24px; font-weight: 700;
+  }
+  .landing-title {
+    font-size: 40px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1;
+    margin: 0 0 var(--space-3); color: var(--text-primary);
+  }
+  .landing-sub {
+    font-size: var(--fs-body); color: var(--text-secondary); line-height: 1.6;
+    margin: 0 0 var(--space-5);
+  }
+  .landing-actions { display: flex; gap: var(--space-3); flex-wrap: wrap; justify-content: center; }
+  /* The one primary button in the app. Same brand fill as the Run menu, so
+     "the main action" reads the same on both screens. */
+  button.btn-primary {
+    background: var(--brand); border-color: var(--brand); color: var(--brand-ink);
+  }
+  button.btn-primary:hover:not(:disabled) { background: var(--brand-hi); border-color: var(--brand-hi); }
+  .landing-note {
+    font-size: var(--fs-caption); color: var(--text-muted); margin: var(--space-5) 0 0;
+    line-height: 1.6; max-width: 46ch;
+  }
+  @media (max-width: 560px) {
+    .landing-title { font-size: 30px; }
+    .landing-actions { width: 100%; flex-direction: column; }
+    .landing-actions button.btn { justify-content: center; }
+  }
+
+  /* ---------- prompt terminal ---------- */
+  /* Deliberately not three fake macOS traffic lights: this app dispatches
+     payouts, and decorative chrome reads as toy. One bar, one action. */
+  .terminal {
+    border: 1px solid var(--border); border-radius: var(--r-control); overflow: hidden;
+    background: var(--surface-2);
+  }
+  .terminal-bar {
+    display: flex; align-items: center; gap: var(--space-3);
+    padding: 8px 10px; border-bottom: 1px solid var(--gridline); background: var(--surface-1);
+  }
+  /* Top-LEFT, where a left-to-right read lands first: the action matters
+     more here than the filename it sits beside. */
+  button.terminal-copy {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: var(--fs-caption);
+    font-weight: 600; padding: 4px 10px; border-radius: var(--r-control);
+    border: 1px solid var(--border); background: var(--surface-2); color: var(--text-primary);
+    cursor: pointer; transition: border-color .12s ease, color .12s ease;
+  }
+  button.terminal-copy:hover { border-color: var(--border-strong); }
+  .terminal-name {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: var(--fs-caption);
+    color: var(--text-muted); margin-left: auto;
+  }
+  /* Capped height with its own scroll: the upload cards are what this tab is
+     for, and 60 lines inline would push them past the fold. The copy button
+     carries the whole string regardless of what is scrolled into view, which
+     is what makes capping it safe. */
+  .terminal-body {
+    margin: 0; padding: var(--space-3) var(--space-4);
+    max-height: 380px; overflow: auto;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: var(--fs-caption); line-height: 1.65;
+    color: var(--text-secondary); white-space: pre; tab-size: 2;
+  }
+  .terminal-body:focus-visible { outline: 2px solid var(--blue); outline-offset: -2px; }
+
   /* ---------- responsive ---------- */
   @media (max-width: 900px) {
     .app { flex-direction: column; height: auto; min-height: 100vh; }
@@ -1307,6 +1419,27 @@
        accessible name comes from aria-label on the control itself. */
     .help-fab { padding: 0; width: 46px; height: 46px; justify-content: center; border-radius: 50%; }
     .help-fab .help-fab-label { display: none; }
+  }
+
+  /* UserCursor replaces the OS arrow while it's live, so cursor:none has to
+     beat every explicit `cursor: pointer` already in this file (buttons,
+     .clickable rows, chart legend items -- all higher specificity than a
+     lone class-on-html selector). !important is the only reliable way to
+     win that fight; scoped to .user-cursor-active so it never leaks into a
+     page that hasn't opted in. */
+  html.user-cursor-active,
+  html.user-cursor-active * {
+    cursor: none !important;
+  }
+
+  .user-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 2147483647;
+    pointer-events: none;
+    will-change: transform;
+    transition: opacity 150ms var(--ease-out);
   }
 
 }

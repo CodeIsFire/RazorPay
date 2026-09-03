@@ -221,3 +221,52 @@ export interface ChatResponse {
   reply: string
 }
 
+
+/* --- User-uploaded data (app/ingest.py) ---------------------------------- */
+
+/** The sources a user can upload. 'gateway' is absent deliberately: it is
+    RazorpayX's own record, and there is no file anyone holds for it. */
+export type UploadSource = 'ledger' | 'bank_statement'
+
+export interface DataSummary {
+  ledger: { rows: number; updated_at: string | null }
+  bank_statement: { rows: number; updated_at: string | null }
+}
+
+/** One problem with one cell, from a 422. row_number is 1-indexed over data
+    rows -- the header is not row 1 -- and 0 means the file or its header
+    rather than any single row. */
+export interface UploadProblem {
+  row_number: number
+  column: string
+  message: string
+}
+
+/** What replacing a source would destroy, from POST …?dry_run=true. Counted
+    by the server against the real rows, not estimated here. */
+export interface UploadPreview {
+  rows_to_load: number
+  rows_to_delete: number
+  exceptions_to_delete: number
+  actions_to_delete: number
+  /** Of the actions about to be deleted, how many already moved real money
+      (they carry a RazorpayX payout id). The number that turns this from a
+      data swap into a decision. */
+  live_payouts_affected: number
+}
+
+export interface UploadResult {
+  rows_loaded: number
+  rows_deleted: number
+  exceptions_deleted: number
+  actions_deleted: number
+}
+
+/** What POST /demo/reset loaded, per source, plus the exceptions the two
+    reconcile passes raised afterwards. */
+export interface DemoResetResult {
+  ledger: number
+  gateway: number
+  bank_statement: number
+  exceptions: number
+}

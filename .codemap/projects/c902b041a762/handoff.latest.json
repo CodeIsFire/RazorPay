@@ -1,50 +1,70 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-08-29T16:51:54.994444+05:30",
+  "generated_at": "2026-09-03T12:03:30.854562+05:30",
   "root": "/Users/aaditya/Desktop/RazorPay/recon-recover",
-  "branch": "master",
-  "base_ref": "master",
+  "branch": "main",
+  "base_ref": "origin/main",
   "prefix": {
-    "file_count": 42,
+    "file_count": 427,
     "hubs": [
       {
+        "path": "app/__init__.py",
+        "importers": 22
+      },
+      {
+        "path": "frontend/src/components/charts/chart-context.tsx",
+        "importers": 15
+      },
+      {
+        "path": "frontend/src/lib/types.ts",
+        "importers": 15
+      },
+      {
         "path": "app/db.py",
-        "importers": 10
+        "importers": 13
       },
       {
         "path": "app/config.py",
-        "importers": 9
-      },
-      {
-        "path": "app/fixtures.py",
-        "importers": 9
+        "importers": 12
       },
       {
         "path": "app/load_fixtures.py",
-        "importers": 9
+        "importers": 12
       },
       {
-        "path": "app/__init__.py",
-        "importers": 8
+        "path": "app/fixtures.py",
+        "importers": 11
       },
       {
         "path": "app/classify.py",
-        "importers": 7
+        "importers": 10
       },
       {
         "path": "app/main.py",
-        "importers": 5
-      },
-      {
-        "path": "app/reconcile.py",
-        "importers": 5
+        "importers": 8
       },
       {
         "path": "app/router.py",
-        "importers": 5
+        "importers": 8
+      },
+      {
+        "path": "app/reconcile.py",
+        "importers": 7
       },
       {
         "path": "app/funnel.py",
+        "importers": 6
+      },
+      {
+        "path": "frontend/src/components/charts/chart-phase.ts",
+        "importers": 5
+      },
+      {
+        "path": "frontend/src/components/charts/y-axis-scales.ts",
+        "importers": 5
+      },
+      {
+        "path": "app/ingest.py",
         "importers": 4
       }
     ]
@@ -53,296 +73,417 @@
     "changed": [
       {
         "path": ".claude/launch.json",
-        "hash": "683c1be3f4aab4746c5e44db75fe18cb8de71fc108ac46a9c044c3ba12afa09e",
-        "size": 247,
+        "hash": "0422881cbe343675dfd37a2c80a64efd5b4f9f48f8a72408ad4528a3c1844513",
+        "size": 817,
+        "status": "modified"
+      },
+      {
+        "path": ".claude/worktrees/data-upload-feature/",
         "status": "untracked"
-      },
-      {
-        "path": ".env.example",
-        "hash": "eb6ae9a73132861e960d15aa1e84b5c94cefa2cceb3931cc16a70723f5b88519",
-        "size": 502,
-        "status": "modified"
-      },
-      {
-        "path": "PROJECT_SUMMARY.md",
-        "hash": "7a979d2bc550c2e6dd3d4de1ca3d023f4e0ae8a81f90b88c503f3f152e4c84f7",
-        "size": 10298,
-        "status": "modified"
       },
       {
         "path": "app/analytics.py",
-        "hash": "ecbf6726442d675066003b68bdbcc15c55092108881815277abfbdd2a56f07cd",
-        "size": 10824,
-        "status": "untracked"
-      },
-      {
-        "path": "app/classify.py",
-        "hash": "faecd7beecc7d8d4e8e0b90d677da93625715a39194a9a298ddb173a734d4ca5",
-        "size": 18813,
+        "hash": "c71413204d0f0001f4051e645ac93c006d923288eb337ab05dc1c9ab55378b62",
+        "size": 11914,
         "status": "modified"
       },
       {
         "path": "app/config.py",
-        "hash": "be50b46bd50ec79a849961b82a225fb6c28ca2b7e701f342eef56a767ed0c7f5",
-        "size": 2932,
+        "hash": "9dddf6df30ab1ae36b4bdb5739d2b0a01d17978317d78bcfaf7c5bf526e567d5",
+        "size": 12103,
         "status": "modified"
       },
       {
         "path": "app/db.py",
-        "hash": "75261f64f3dc5b0e9f570930caa2b94f9453c785efc4a9413024817df5ca0cf9",
-        "size": 9075,
+        "hash": "8c610226da62e50e8c234f6ba820b006918480194255a0a304373b31c7ffccd5",
+        "size": 10128,
         "status": "modified"
       },
       {
-        "path": "app/fixtures.py",
-        "hash": "3aa007fb30b9ddfc9c566e6df937c5a6f924ad3654ce3bdd43692fbb2588411d",
-        "size": 30749,
-        "status": "modified"
+        "path": "app/demo.py",
+        "hash": "c300191421940e4077e2bb82ecf563e10fa689db714c0fbdd4ebb0ab6d510cd1",
+        "size": 3474,
+        "status": "untracked"
       },
       {
-        "path": "app/funnel.py",
-        "hash": "3126c36ed88bd8d5a1b1d3d11411f301bd46d37359e8dd6d3fe41a9e1f10b851",
-        "size": 3264,
-        "status": "modified"
-      },
-      {
-        "path": "app/live_executor.py",
-        "hash": "f0e2283cf3b0247e335b4f4de6fd5c5771f643010ef168ab822d8fead1a7d0c0",
-        "size": 3450,
-        "status": "modified"
+        "path": "app/ingest.py",
+        "hash": "a8bde7e295173a940f8ebac4d5a3ca30f4419845e8ef6f70bb8e225677338061",
+        "size": 20712,
+        "status": "untracked"
       },
       {
         "path": "app/load_fixtures.py",
-        "hash": "0174043043f986970615eb07ca7debe625d2067271a165453fdbbcee3266bb1a",
-        "size": 2655,
+        "hash": "28180167b8809d4c7c8977976c9084edc451e6484d6ee0b6b0ffb6b11b3d6493",
+        "size": 2826,
         "status": "modified"
       },
       {
         "path": "app/main.py",
-        "hash": "855b30818181b34e66e905e5ebbfd8aca33730d1a4241474e762d9f13997b108",
-        "size": 12526,
-        "status": "modified"
-      },
-      {
-        "path": "app/razorpayx_client.py",
-        "hash": "d7986f26d4ff55937bb6dbe72896b4dd98fb9bdb165ef696f552b81044297663",
-        "size": 10185,
-        "status": "modified"
-      },
-      {
-        "path": "app/reconcile.py",
-        "hash": "58bb3e260c66aa9cd6130c140acd742bf7bef8b767e56d3ff7e2a1397f22507d",
-        "size": 11358,
+        "hash": "c7dc71ad14ecc1bf825de5046e9222ecac2143f8c59605e60d066a95a9f34285",
+        "size": 25204,
         "status": "modified"
       },
       {
         "path": "app/router.py",
-        "hash": "879cc9e5a91b8c4432600d9be4d4bd432f889b86e8f554d1e29475d91c884d58",
-        "size": 23342,
+        "hash": "051790f4e20ddd9348cb58412511bee283958b1b30cf48363160121851e58238",
+        "size": 31129,
         "status": "modified"
       },
       {
-        "path": "app/static/index.html",
-        "hash": "f914e6fbd891c32357adb2c1fa14f0b6ecbecee324c3f7dbc201319af613beed",
-        "size": 94992,
-        "status": "modified"
-      },
-      {
-        "path": "app/webhooks.py",
-        "hash": "9f77e80cc286624bea48ff8b9a6742a7d9ac5dbea09afd543c470f9ba3254a2f",
-        "size": 4164,
-        "status": "modified"
-      },
-      {
-        "path": "data/fixtures/gateway.json",
-        "hash": "f2752bd2ff0c9766260451e1adcffed35cdd7208993ae351a88a33f25e7e6cc9",
-        "size": 29668,
-        "status": "modified"
-      },
-      {
-        "path": "data/fixtures/ground_truth.json",
-        "hash": "1de3dbef253796c1ba0cd217ea028e06e7aab095cd307184f75626d6730dffdd",
-        "size": 9247,
-        "status": "modified"
-      },
-      {
-        "path": "data/fixtures/ledger.json",
-        "hash": "6dc0fb06abae8ec64455934570d76501801f750798eb539dd277626a8efe1b9c",
-        "size": 58939,
-        "status": "modified"
-      },
-      {
-        "path": "data/fund_account_map.json",
-        "hash": "08ebb5f86beaf5e1660872c9f926e6c4e472e7eb28be1d1bd375b0a35631a13b",
-        "size": 317,
-        "status": "modified"
-      },
-      {
-        "path": "data/recon_recover.db-wal",
-        "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "path": "data/samples/sample_bank_statement.csv",
+        "hash": "2e926f4f993ad5cc128a75194dd1d4fd273530d5da062f6a8eec9385556b790f",
+        "size": 1612,
         "status": "untracked"
       },
       {
+        "path": "data/samples/sample_ledger.csv",
+        "hash": "692319e13184e12150c1d19cf150a5311a7b370a4ae3618d720fcd7b8973b422",
+        "size": 2331,
+        "status": "untracked"
+      },
+      {
+        "path": "data/samples/sample_ledger_broken.csv",
+        "hash": "9abb5ccd85a91c68bb129790c881d7cd5431a583c8beb190e02c29d64b40fe34",
+        "size": 1154,
+        "status": "untracked"
+      },
+      {
+        "path": "docs/superpowers/specs/2026-09-02-data-upload-design.md",
+        "hash": "acb8b0e9a4dac4b6bbd238cc8321b6473bd5c7d37e1bb4606eca7acbf5963641",
+        "size": 11073,
+        "status": "branch"
+      },
+      {
+        "path": "frontend/.claude/agents/motion-reviewer.md",
+        "hash": "00b4bbcb09e5990b800051545da28b8722b4f7b217d6aebcb2bb696a9cad74b1",
+        "size": 2447,
+        "status": "untracked"
+      },
+      {
+        "path": "frontend/.claude/skills/motion/SKILL.md",
+        "hash": "e9e9b884afe14b07c3c71fe707a5fa2407b2d645c75686402927496dd7e596f3",
+        "size": 4500,
+        "status": "untracked"
+      },
+      {
+        "path": "frontend/.claude/skills/motion/best-practices/base-ui.md",
+        "hash": "cf1e79a446965c965a19a07e6c92527c8f661f87e0f16e321d4136fa7f1dd0de",
+        "size": 2737,
+        "status": "untracked"
+      },
+      {
+        "path": "frontend/.claude/skills/motion/best-practices/index.md",
+        "hash": "88f80af1af8e88c0eb9ad85ad70dd5f61c002c3a96055a05eeafc58bb2430bdf",
+        "size": 2670,
+        "status": "untracked"
+      },
+      {
+        "path": "frontend/.claude/skills/motion/best-practices/motion.md",
+        "hash": "92dee7c7b3d39ed02956102fbc0c9790e4f45a11b80bd5846a8336871b555d8a",
+        "size": 947,
+        "status": "untracked"
+      },
+      {
+        "path": "frontend/.claude/skills/motion/best-practices/react.md",
+        "hash": "bdfbe7810d96e0b6ebfe36db3823027b1cc011285f7e2f60f7ad26c08bf4337f",
+        "size": 2115,
+        "status": "untracked"
+      },
+      {
+        "path": "frontend/.claude/skills/motion/best-practices/vue.md",
+        "hash": "935e462042b5f02d086d680e757f29b5e0d3177781c3aab9cc3838eed88bd292",
+        "size": 1354,
+        "status": "untracked"
+      },
+      {
+        "path": "frontend/.claude/skills/motion/codex/index.md",
+        "hash": "590c1d3891019a501b77389dde78d9cb259e66bcb87746e5c7d06d8414fccaf6",
+        "size": 6143,
+        "status": "untracked"
+      },
+      {
+        "path": "frontend/.claude/skills/motion/css-spring/index.md",
+        "hash": "98ae2faa1c68b5d2527e1f6bb3d94a1fb0482d24099ad6f9c5cfcd3ebb430a85",
+        "size": 2545,
+        "status": "untracked"
+      },
+      {
+        "path": "frontend/.claude/skills/motion/performance-audit/index.md",
+        "hash": "90cd82c9c1e492d529e30bfe457498cd83cf8bfd235ca5b9f0789e425248cbd4",
+        "size": 1652,
+        "status": "untracked"
+      },
+      {
+        "path": "frontend/.claude/skills/motion/transition-preview/index.md",
+        "hash": "64962b3757518956e56599d31bea8f7bced604b4ab35a14e2e1cf3494aa87ace",
+        "size": 2240,
+        "status": "untracked"
+      },
+      {
+        "path": "frontend/.mcp.json",
+        "hash": "c0ec7dc260199e18eeced0faf0a34e5ed286b5fa68cb18a690ca72182c26431f",
+        "size": 200,
+        "status": "untracked"
+      },
+      {
+        "path": "frontend/src/App.tsx",
+        "hash": "328ab64c940325eaff2c618194173d03e41cf6af0b31017093b1a0b29d0c539f",
+        "size": 4187,
+        "status": "modified"
+      },
+      {
+        "path": "frontend/src/components/ConfirmDialog.tsx",
+        "hash": "afd29fc05e90a9b191385ff710c53c267d3b3079a4b85f40dcc1a3f770ad9f58",
+        "size": 2144,
+        "status": "untracked"
+      },
+      {
+        "path": "frontend/src/components/RouteConfirm.tsx",
+        "hash": "7ca9616d049c45d9c44dc2082137204cb19ef954eb6b83b903f794713c1a8084",
+        "size": 3262,
+        "status": "modified"
+      },
+      {
+        "path": "frontend/src/components/charts/bar-chart.tsx",
+        "hash": "b9031c34a5c84d97635480fc98ed31e6b4ccb787cf213c114fef3eab7ee547e1",
+        "size": 22967,
+        "status": "modified"
+      },
+      {
+        "path": "frontend/src/components/cursor/UserCursor.tsx",
+        "hash": "f25445d211e3071257c1d3e0a7320f1085bcc2c499961f8ec61d7b620ed497e3",
+        "size": 3087,
+        "status": "untracked"
+      },
+      {
+        "path": "frontend/src/components/data/DataTab.test.tsx",
+        "hash": "91cd8eca3ea53e3c6c83cbdc8491879c3decbeffdd41b275d24daf0a48d1bd61",
+        "size": 7913,
+        "status": "untracked"
+      },
+      {
+        "path": "frontend/src/components/data/DataTab.tsx",
+        "hash": "d25b27f0c448f66417a49d86181f592a74b04cd48e1c2cdce10dd612e5f2f372",
+        "size": 2125,
+        "status": "untracked"
+      },
+      {
+        "path": "frontend/src/components/data/PromptTerminal.test.tsx",
+        "hash": "784fb7d9555728702cf6165904cc8a1353ef6e44d5bb41bc38c842b1529de8ae",
+        "size": 3380,
+        "status": "untracked"
+      },
+      {
+        "path": "frontend/src/components/data/PromptTerminal.tsx",
+        "hash": "349e0d57a27e795d5043381490441db5c080693e5bf9f16c1ff497de0a0929c3",
+        "size": 2593,
+        "status": "untracked"
+      },
+      {
+        "path": "frontend/src/components/data/UploadCard.tsx",
+        "hash": "10d647d5ec1a4aa37622b9222c225681a84a2fb600ac2a38bad820d46a258f19",
+        "size": 5470,
+        "status": "untracked"
+      },
+      {
+        "path": "frontend/src/components/data/UploadConfirm.tsx",
+        "hash": "e1ec64ac75b1bb5f87c8e4b9b76bb6e31cf875072b72fc2107171c4884981718",
+        "size": 2684,
+        "status": "untracked"
+      },
+      {
+        "path": "frontend/src/components/icons.tsx",
+        "hash": "ece304fc021a9c8c1f2875b0e5405e32cca29c35f114fd30e636935791596d11",
+        "size": 6084,
+        "status": "modified"
+      },
+      {
+        "path": "frontend/src/components/landing/Landing.test.tsx",
+        "hash": "4824ba2262751d25f8d986f6ba72617397f9b80251da164f7bab5f73e4a52fd0",
+        "size": 2241,
+        "status": "untracked"
+      },
+      {
+        "path": "frontend/src/components/landing/Landing.tsx",
+        "hash": "8b3b8fb5dfa8a5ac15a9edb57977031aefbf303342a4392abf715711d262881d",
+        "size": 1540,
+        "status": "untracked"
+      },
+      {
+        "path": "frontend/src/components/nav/RailNav.test.tsx",
+        "hash": "dc5cb218c02579d843a38e5f8992da35e57577b79ae39615bd47d78fa72a9a42",
+        "size": 3797,
+        "status": "untracked"
+      },
+      {
+        "path": "frontend/src/components/nav/RailNav.tsx",
+        "hash": "e3010010a3ec403fa8707e7e20ad0e1eb53c7b336e673ad04a948c196134e27a",
+        "size": 4820,
+        "status": "modified"
+      },
+      {
+        "path": "frontend/src/hooks/useEntered.test.ts",
+        "hash": "b0f0bf59a0ecf7d7e49ab59baab62543d70f2a9e98d05de51ed729452874dd67",
+        "size": 2075,
+        "status": "untracked"
+      },
+      {
+        "path": "frontend/src/hooks/useEntered.ts",
+        "hash": "dc5b15537f1570d93a661e78ce7818141043a5ad7d4189cd2fefad6cfdcd5314",
+        "size": 1164,
+        "status": "untracked"
+      },
+      {
+        "path": "frontend/src/index.css",
+        "hash": "863eecb603527a48347cdbce4832442e3bf6604f0e584b72a81482db0d7b536a",
+        "size": 80117,
+        "status": "modified"
+      },
+      {
+        "path": "frontend/src/lib/api.ts",
+        "hash": "eda412f78fee8fd75e84751e42cdf21fa07a4fe9ad32a5b4712c6c44c009b40f",
+        "size": 5525,
+        "status": "modified"
+      },
+      {
+        "path": "frontend/src/lib/conversionPrompt.ts",
+        "hash": "49a38e0699d8ccf2ff88d113e1ad87e6e20e99719ec12b1d61466ec898820251",
+        "size": 5666,
+        "status": "untracked"
+      },
+      {
+        "path": "frontend/src/lib/labels.ts",
+        "hash": "cd5160ee2cbdcf174fb12db7882e15de3492da672c3a5c8112c395f6fd9c82c3",
+        "size": 4471,
+        "status": "modified"
+      },
+      {
+        "path": "frontend/src/lib/queries.ts",
+        "hash": "a56931ee873ab167e4dde0feb3558ca1f543d7dcdb780d764d75c0a5cd38e4e3",
+        "size": 4888,
+        "status": "modified"
+      },
+      {
+        "path": "frontend/src/lib/types.ts",
+        "hash": "a42436c85cba1d0752274984c1dc55d777249bc130079a14cb55a245cabc446c",
+        "size": 7471,
+        "status": "modified"
+      },
+      {
+        "path": "frontend/vite.config.ts",
+        "hash": "6d1c01c7614890da71995c07d0485c27b5003021a388e281e21590ce06b16b8d",
+        "size": 1131,
+        "status": "modified"
+      },
+      {
+        "path": "requirements.txt",
+        "hash": "7e901894dc94068e1f4c2ddadf3874d5ced90a5ae00e02d7f0cafd33e1262b44",
+        "size": 268,
+        "status": "modified"
+      },
+      {
         "path": "schema.sql",
-        "hash": "9bb85d03e64c72de8cfdf00df33ef9a63ccd60263556ce5af7fa5d476a1c59be",
-        "size": 10632,
-        "status": "modified"
-      },
-      {
-        "path": "scripts/load_demo_data.py",
-        "hash": "8ea82a71b149f6b09a6415f5e02c9404594eefe43d10d6fcea59c1163d20183b",
-        "size": 3544,
-        "status": "modified"
-      },
-      {
-        "path": "scripts/setup_test_payee.py",
-        "status": "modified"
-      },
-      {
-        "path": "tests/conftest.py",
-        "hash": "97c48db20e587b8010f147553831bac97d0ab3c550f9dc2664e59a0f146007c2",
-        "size": 1228,
+        "hash": "65be7234d11edd31366554a9cc1c9cc12226594b703060434142c505800560d8",
+        "size": 11185,
         "status": "modified"
       },
       {
         "path": "tests/test_analytics.py",
-        "hash": "a5369f6e47a9d191bc3b4d91dbfc6b8ab3dd1d07a164e5fded531f1d3479cf12",
-        "size": 12781,
+        "hash": "be7ff0a184e9f476d8b5950a4a977d7536a3e18d108e592f61b3374a39761807",
+        "size": 15081,
+        "status": "modified"
+      },
+      {
+        "path": "tests/test_data_upload.py",
+        "hash": "33ab5443f05f1ef6073df403670d1520e0e4e5131f996f617917fda2008c3d66",
+        "size": 13272,
         "status": "untracked"
       },
       {
-        "path": "tests/test_classify.py",
-        "hash": "34ff566db03ba5d3749f6fe39e07ef99d7cba5d080be95198c9db02d6b79102d",
-        "size": 10678,
-        "status": "modified"
-      },
-      {
-        "path": "tests/test_exception_detail.py",
-        "hash": "225ab28743953642c0c35f67e761826c31345423f36ba2e05fcab175826c5aaa",
-        "size": 6705,
+        "path": "tests/test_demo_reset.py",
+        "hash": "14af7c2c9b30609c9c9163e832a49faba33ed22b77a86bf9f89ce1c1ea0a4ad6",
+        "size": 4217,
         "status": "untracked"
       },
       {
-        "path": "tests/test_fixtures.py",
-        "hash": "f4faa854e8bb21c6768701e5ee45b36fb5a0f27d62d260e9d8cd9282e0bf378b",
-        "size": 16975,
-        "status": "modified"
-      },
-      {
-        "path": "tests/test_funnel.py",
-        "hash": "b6ee5c6f420177c6682e510760555d0d98affa48459dae5b991012e9af8670d2",
-        "size": 4707,
-        "status": "modified"
-      },
-      {
-        "path": "tests/test_health.py",
-        "hash": "d14226c87b78d4a008afb92fbbdcd8102f6b026bb4b43ae8343ede8c1dce6ccd",
-        "size": 2208,
-        "status": "modified"
-      },
-      {
-        "path": "tests/test_partial_payment.py",
-        "hash": "5e3df20dbf2048535a89532f7d51e6f49fb888ad59ebd179f1ba2175aa06c0a2",
-        "size": 22199,
+        "path": "tests/test_ingest.py",
+        "hash": "2f8a2f0a9929d0c31e3aad67145627a598423d709b06a90459d427f0b4b9f903",
+        "size": 10799,
         "status": "untracked"
       },
       {
-        "path": "tests/test_razorpayx_client.py",
-        "hash": "ee1cc8077bc0b68f92c22f8ef91a44c17c56b46bf01f6195e9f0c4fa2b49a761",
-        "size": 10552,
-        "status": "modified"
+        "path": "tests/test_ingest_payout.py",
+        "hash": "211091aa513807cc1bf748397af776c2eb2b6315a1e7180a6de3212a94301766",
+        "size": 7195,
+        "status": "untracked"
       },
       {
-        "path": "tests/test_reconcile.py",
-        "hash": "133b6c3d3ce5246be9cf0e02d07223d8c70afc54a7bbe93ccc223695ab01d937",
-        "size": 7874,
-        "status": "modified"
+        "path": "tests/test_row_origin.py",
+        "hash": "bf28dee713ae2485fd0508378c1343461dfc3a46f66b97797f33e44eea2b3da2",
+        "size": 4118,
+        "status": "untracked"
       },
       {
-        "path": "tests/test_router.py",
-        "hash": "84bf09f785163c266457d4457826c141ad9c31af534a1f0beddbc0c2f3b9b202",
-        "size": 36926,
-        "status": "modified"
-      },
-      {
-        "path": "tests/test_webhooks.py",
-        "hash": "bdf5d7427cb93296f9d4a7c76563df619b58704e8f1d766b599fff1cbef3bfa2",
-        "size": 7222,
-        "status": "modified"
+        "path": "tests/test_upload_dispatch_gate.py",
+        "hash": "f37eca947ce172683c0d477163e30cc969c1bc59772a25ca7ae4b3ec87d3949f",
+        "size": 5069,
+        "status": "untracked"
       }
     ],
     "risk_files": [
       {
-        "path": "app/db.py",
-        "importers": 10,
+        "path": "frontend/src/lib/types.ts",
+        "importers": 15,
         "is_hub": true,
-        "reason": "hub file imported by 10 files"
+        "reason": "hub file imported by 15 files"
+      },
+      {
+        "path": "app/db.py",
+        "importers": 13,
+        "is_hub": true,
+        "reason": "hub file imported by 13 files"
       },
       {
         "path": "app/config.py",
-        "importers": 9,
+        "importers": 12,
         "is_hub": true,
-        "reason": "hub file imported by 9 files"
-      },
-      {
-        "path": "app/fixtures.py",
-        "importers": 9,
-        "is_hub": true,
-        "reason": "hub file imported by 9 files"
+        "reason": "hub file imported by 12 files"
       },
       {
         "path": "app/load_fixtures.py",
-        "importers": 9,
+        "importers": 12,
         "is_hub": true,
-        "reason": "hub file imported by 9 files"
-      },
-      {
-        "path": "app/classify.py",
-        "importers": 7,
-        "is_hub": true,
-        "reason": "hub file imported by 7 files"
+        "reason": "hub file imported by 12 files"
       },
       {
         "path": "app/main.py",
-        "importers": 5,
+        "importers": 8,
         "is_hub": true,
-        "reason": "hub file imported by 5 files"
-      },
-      {
-        "path": "app/reconcile.py",
-        "importers": 5,
-        "is_hub": true,
-        "reason": "hub file imported by 5 files"
+        "reason": "hub file imported by 8 files"
       },
       {
         "path": "app/router.py",
-        "importers": 5,
+        "importers": 8,
         "is_hub": true,
-        "reason": "hub file imported by 5 files"
+        "reason": "hub file imported by 8 files"
       },
       {
-        "path": "app/funnel.py",
+        "path": "app/ingest.py",
         "importers": 4,
         "is_hub": true,
         "reason": "hub file imported by 4 files"
       },
       {
         "path": "app/analytics.py",
-        "importers": 2,
-        "is_hub": false,
-        "reason": "imported by 2 files"
+        "importers": 3,
+        "is_hub": true,
+        "reason": "hub file imported by 3 files"
       },
       {
-        "path": "app/live_executor.py",
-        "importers": 2,
-        "is_hub": false,
-        "reason": "imported by 2 files"
-      },
-      {
-        "path": "app/webhooks.py",
-        "importers": 2,
-        "is_hub": false,
-        "reason": "imported by 2 files"
+        "path": "frontend/src/lib/labels.ts",
+        "importers": 3,
+        "is_hub": true,
+        "reason": "hub file imported by 3 files"
       }
     ],
     "recent_events": [],
@@ -354,18 +495,18 @@
       "Live watch state was unavailable; timeline may be incomplete."
     ]
   },
-  "prefix_hash": "2277cc9749803a3fbade6771d543c9ef784adc7cb25b9f23823a7fd6943512e8",
-  "delta_hash": "408dfaf1f7c2552c7f49961f9abdfb6e4299711f7dd0f0263f80321be7264f58",
-  "combined_hash": "1fa8bc8ed38728b7619ad437ae43df8e225c9ee669aa2d05412dcd39ac80bcae",
+  "prefix_hash": "42c768842394319e27affd23875032f8b930b753996dcba3fb0ca9b6b1e5d2a7",
+  "delta_hash": "89bc8ed937dc3f3b4b013cf7e32494fd18775271e85d147705ce4bd9dda712fd",
+  "combined_hash": "4fe6f7fef5546cb88a5bc289975a63edceceaa3d6de7bb80f4774c633fe43ea6",
   "metrics": {
-    "prefix_bytes": 427,
-    "delta_bytes": 6408,
-    "total_bytes": 6835,
-    "unchanged_bytes": 427,
-    "reuse_ratio": 0.062472567666422826,
-    "prefix_reused": true,
+    "prefix_bytes": 743,
+    "delta_bytes": 10203,
+    "total_bytes": 10946,
+    "unchanged_bytes": 0,
+    "reuse_ratio": 0,
+    "prefix_reused": false,
     "delta_reused": false,
-    "previous_combined_hash": "880cc40cd1b9d14b84fc62a521aecb3803451097aea74eba4167fe40432f7ec0"
+    "previous_combined_hash": "07b0b07738fad730771b9ba8dd8f3b081df6936a15678b83957f2be2a2d03264"
   },
   "agent_history": [
     {
@@ -387,119 +528,174 @@
       "agent_id": "claude-code",
       "started_at": "2026-08-29T16:51:54.994445+05:30",
       "ended_at": "2026-08-29T16:51:54.994445+05:30"
+    },
+    {
+      "agent_id": "claude-code",
+      "started_at": "2026-08-31T00:41:05.838352+05:30",
+      "ended_at": "2026-08-31T00:41:05.838352+05:30"
+    },
+    {
+      "agent_id": "claude-code",
+      "started_at": "2026-08-31T02:50:57.861915+05:30",
+      "ended_at": "2026-08-31T02:50:57.861915+05:30"
+    },
+    {
+      "agent_id": "claude-code",
+      "started_at": "2026-08-31T10:08:40.474444+05:30",
+      "ended_at": "2026-08-31T10:08:40.474444+05:30"
+    },
+    {
+      "agent_id": "claude-code",
+      "started_at": "2026-08-31T12:48:40.903112+05:30",
+      "ended_at": "2026-08-31T12:48:40.903112+05:30"
+    },
+    {
+      "agent_id": "claude-code",
+      "started_at": "2026-08-31T16:01:12.566683+05:30",
+      "ended_at": "2026-08-31T16:01:12.566683+05:30"
+    },
+    {
+      "agent_id": "claude-code",
+      "started_at": "2026-08-31T23:00:50.453208+05:30",
+      "ended_at": "2026-08-31T23:00:50.453208+05:30"
+    },
+    {
+      "agent_id": "claude-code",
+      "started_at": "2026-09-01T00:19:41.988622+05:30",
+      "ended_at": "2026-09-01T00:19:41.988622+05:30"
+    },
+    {
+      "agent_id": "claude-code",
+      "started_at": "2026-09-01T00:27:14.130757+05:30",
+      "ended_at": "2026-09-01T00:27:14.130757+05:30"
+    },
+    {
+      "agent_id": "claude-code",
+      "started_at": "2026-09-02T13:18:38.341346+05:30",
+      "ended_at": "2026-09-02T13:18:38.341346+05:30"
+    },
+    {
+      "agent_id": "claude-code",
+      "started_at": "2026-09-03T12:03:30.854563+05:30",
+      "ended_at": "2026-09-03T12:03:30.854563+05:30"
     }
   ],
   "changed_files": [
     ".claude/launch.json",
-    ".env.example",
-    "PROJECT_SUMMARY.md",
+    ".claude/worktrees/data-upload-feature/",
     "app/analytics.py",
-    "app/classify.py",
     "app/config.py",
     "app/db.py",
-    "app/fixtures.py",
-    "app/funnel.py",
-    "app/live_executor.py",
+    "app/demo.py",
+    "app/ingest.py",
     "app/load_fixtures.py",
     "app/main.py",
-    "app/razorpayx_client.py",
-    "app/reconcile.py",
     "app/router.py",
-    "app/static/index.html",
-    "app/webhooks.py",
-    "data/fixtures/gateway.json",
-    "data/fixtures/ground_truth.json",
-    "data/fixtures/ledger.json",
-    "data/fund_account_map.json",
-    "data/recon_recover.db-wal",
+    "data/samples/sample_bank_statement.csv",
+    "data/samples/sample_ledger.csv",
+    "data/samples/sample_ledger_broken.csv",
+    "docs/superpowers/specs/2026-09-02-data-upload-design.md",
+    "frontend/.claude/agents/motion-reviewer.md",
+    "frontend/.claude/skills/motion/SKILL.md",
+    "frontend/.claude/skills/motion/best-practices/base-ui.md",
+    "frontend/.claude/skills/motion/best-practices/index.md",
+    "frontend/.claude/skills/motion/best-practices/motion.md",
+    "frontend/.claude/skills/motion/best-practices/react.md",
+    "frontend/.claude/skills/motion/best-practices/vue.md",
+    "frontend/.claude/skills/motion/codex/index.md",
+    "frontend/.claude/skills/motion/css-spring/index.md",
+    "frontend/.claude/skills/motion/performance-audit/index.md",
+    "frontend/.claude/skills/motion/transition-preview/index.md",
+    "frontend/.mcp.json",
+    "frontend/src/App.tsx",
+    "frontend/src/components/ConfirmDialog.tsx",
+    "frontend/src/components/RouteConfirm.tsx",
+    "frontend/src/components/charts/bar-chart.tsx",
+    "frontend/src/components/cursor/UserCursor.tsx",
+    "frontend/src/components/data/DataTab.test.tsx",
+    "frontend/src/components/data/DataTab.tsx",
+    "frontend/src/components/data/PromptTerminal.test.tsx",
+    "frontend/src/components/data/PromptTerminal.tsx",
+    "frontend/src/components/data/UploadCard.tsx",
+    "frontend/src/components/data/UploadConfirm.tsx",
+    "frontend/src/components/icons.tsx",
+    "frontend/src/components/landing/Landing.test.tsx",
+    "frontend/src/components/landing/Landing.tsx",
+    "frontend/src/components/nav/RailNav.test.tsx",
+    "frontend/src/components/nav/RailNav.tsx",
+    "frontend/src/hooks/useEntered.test.ts",
+    "frontend/src/hooks/useEntered.ts",
+    "frontend/src/index.css",
+    "frontend/src/lib/api.ts",
+    "frontend/src/lib/conversionPrompt.ts",
+    "frontend/src/lib/labels.ts",
+    "frontend/src/lib/queries.ts",
+    "frontend/src/lib/types.ts",
+    "frontend/vite.config.ts",
+    "requirements.txt",
     "schema.sql",
-    "scripts/load_demo_data.py",
-    "scripts/setup_test_payee.py",
-    "tests/conftest.py",
     "tests/test_analytics.py",
-    "tests/test_classify.py",
-    "tests/test_exception_detail.py",
-    "tests/test_fixtures.py",
-    "tests/test_funnel.py",
-    "tests/test_health.py",
-    "tests/test_partial_payment.py",
-    "tests/test_razorpayx_client.py",
-    "tests/test_reconcile.py",
-    "tests/test_router.py",
-    "tests/test_webhooks.py"
+    "tests/test_data_upload.py",
+    "tests/test_demo_reset.py",
+    "tests/test_ingest.py",
+    "tests/test_ingest_payout.py",
+    "tests/test_row_origin.py",
+    "tests/test_upload_dispatch_gate.py"
   ],
   "risk_files": [
     {
-      "path": "app/db.py",
-      "importers": 10,
+      "path": "frontend/src/lib/types.ts",
+      "importers": 15,
       "is_hub": true,
-      "reason": "hub file imported by 10 files"
+      "reason": "hub file imported by 15 files"
+    },
+    {
+      "path": "app/db.py",
+      "importers": 13,
+      "is_hub": true,
+      "reason": "hub file imported by 13 files"
     },
     {
       "path": "app/config.py",
-      "importers": 9,
+      "importers": 12,
       "is_hub": true,
-      "reason": "hub file imported by 9 files"
-    },
-    {
-      "path": "app/fixtures.py",
-      "importers": 9,
-      "is_hub": true,
-      "reason": "hub file imported by 9 files"
+      "reason": "hub file imported by 12 files"
     },
     {
       "path": "app/load_fixtures.py",
-      "importers": 9,
+      "importers": 12,
       "is_hub": true,
-      "reason": "hub file imported by 9 files"
-    },
-    {
-      "path": "app/classify.py",
-      "importers": 7,
-      "is_hub": true,
-      "reason": "hub file imported by 7 files"
+      "reason": "hub file imported by 12 files"
     },
     {
       "path": "app/main.py",
-      "importers": 5,
+      "importers": 8,
       "is_hub": true,
-      "reason": "hub file imported by 5 files"
-    },
-    {
-      "path": "app/reconcile.py",
-      "importers": 5,
-      "is_hub": true,
-      "reason": "hub file imported by 5 files"
+      "reason": "hub file imported by 8 files"
     },
     {
       "path": "app/router.py",
-      "importers": 5,
+      "importers": 8,
       "is_hub": true,
-      "reason": "hub file imported by 5 files"
+      "reason": "hub file imported by 8 files"
     },
     {
-      "path": "app/funnel.py",
+      "path": "app/ingest.py",
       "importers": 4,
       "is_hub": true,
       "reason": "hub file imported by 4 files"
     },
     {
       "path": "app/analytics.py",
-      "importers": 2,
-      "is_hub": false,
-      "reason": "imported by 2 files"
+      "importers": 3,
+      "is_hub": true,
+      "reason": "hub file imported by 3 files"
     },
     {
-      "path": "app/live_executor.py",
-      "importers": 2,
-      "is_hub": false,
-      "reason": "imported by 2 files"
-    },
-    {
-      "path": "app/webhooks.py",
-      "importers": 2,
-      "is_hub": false,
-      "reason": "imported by 2 files"
+      "path": "frontend/src/lib/labels.ts",
+      "importers": 3,
+      "is_hub": true,
+      "reason": "hub file imported by 3 files"
     }
   ],
   "recent_events": [],

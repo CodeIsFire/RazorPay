@@ -195,3 +195,16 @@ GEMINI_BASE_URL = os.getenv("GEMINI_BASE_URL", "https://generativelanguage.googl
 # picking one would make an evaluation result depend on environment ordering --
 # the reported number has to say which model produced it.
 AI_CLASSIFIER_PROVIDER = os.getenv("RR_AI_CLASSIFIER_PROVIDER", "gemini")
+
+# --- User-uploaded data (app/ingest.py) ------------------------------------
+# Bounds on a CSV upload, checked before any parsing so a hostile or
+# accidental 500MB file costs a length check rather than a full parse.
+#
+# The row ceiling is the one that actually bites: parse_csv() holds every
+# row in memory and reports every bad one at once (all-or-nothing is the
+# whole point), so the error list itself is bounded by this too. 5000 rows
+# is comfortably more than a month of payouts for the scale this app
+# targets, and the byte ceiling is roughly what 5000 rows of the widest
+# template weighs with room to spare.
+UPLOAD_MAX_ROWS = _int_env("RR_UPLOAD_MAX_ROWS", "5000")
+UPLOAD_MAX_BYTES = _int_env("RR_UPLOAD_MAX_BYTES", "2000000")

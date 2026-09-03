@@ -33,6 +33,14 @@ export const IconAudit = (p: IconProps) => (
   </svg>
 )
 
+export const IconData = (p: IconProps) => (
+  <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" {...p}>
+    <ellipse cx="10" cy="5" rx="6" ry="2.4" stroke="currentColor" strokeWidth="1.6" />
+    <path d="M4 5v10c0 1.33 2.69 2.4 6 2.4s6-1.07 6-2.4V5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    <path d="M4 10c0 1.33 2.69 2.4 6 2.4s6-1.07 6-2.4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+)
+
 export const IconSettings = (p: IconProps) => (
   <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" {...p}>
     <circle cx="10" cy="10" r="2.6" stroke="currentColor" strokeWidth="1.6" />

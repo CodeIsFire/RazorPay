@@ -298,20 +298,38 @@ const ChartCore = memo(function ChartCore({
       lines,
       data,
       innerHeight,
+      // Stacked series sharing an axis add up within a row before any row
+      // competes for the max -- the same summing `maxValue` above already
+      // does. Without this, a stacked column's combined height can clear
+      // the axis whenever no single series alone would have, since a
+      // per-key (unsummed) max was being used as the domain ceiling here.
       resolveDomain: (dataKeys) => {
         let max = 0;
         for (const d of data) {
-          for (const key of dataKeys) {
-            const value = d[key];
-            if (typeof value === "number" && value > max) {
-              max = value;
+          if (stacked) {
+            let sum = 0;
+            for (const key of dataKeys) {
+              const value = d[key];
+              if (typeof value === "number") {
+                sum += value;
+              }
+            }
+            if (sum > max) {
+              max = sum;
+            }
+          } else {
+            for (const key of dataKeys) {
+              const value = d[key];
+              if (typeof value === "number" && value > max) {
+                max = value;
+              }
             }
           }
         }
         return [0, (max || 100) * 1.1];
       },
     });
-  }, [data, innerHeight, isHorizontal, lines, valueScale]);
+  }, [data, innerHeight, isHorizontal, lines, stacked, valueScale]);
 
   const primaryYScale = getPrimaryYScale(yScales, valueScale);
 

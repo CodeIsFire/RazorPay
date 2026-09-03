@@ -18,3 +18,18 @@ frontend/node_modules/
 app/static/dist/
 # Vite reads this for VITE_* build-time values (see frontend/.env.example).
 frontend/.env
+
+# Suffixed copies of .env. The bare `.env` rule above matches only that exact
+# name, so `.env.bak.20260903` -- which carries the identical live RazorpayX,
+# Groq, Anthropic and Gemini credentials -- was staged as a normal new file.
+# This repo is public; that is a credential leak, not untidiness.
+.env.bak*
+.env.*.bak
+
+# Vendored deps at the repo root. frontend/node_modules/ is covered above, but
+# this one is not, and `git add -A` picks it up.
+node_modules/
+
+# Worktrees created for isolated feature work: full copies of the repo
+# (218MB at time of writing), never part of a commit.
+.claude/worktrees/

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from './api'
+import type { UploadSource } from './types'
 
 /** The dashboard refreshes itself every 15 seconds. These queries are mounted
     by the app shell rather than by the tab that displays them, because the
@@ -15,6 +16,7 @@ export const queryKeys = {
   audit: ['audit'] as const,
   exceptions: ['exceptions'] as const,
   exceptionDetail: (key: string) => ['exception-detail', key] as const,
+  dataSummary: ['data-summary'] as const,
 }
 
 const polled = { refetchInterval: POLL_MS } as const
@@ -66,6 +68,12 @@ const PIPELINE_KEYS = [
   queryKeys.integrationStatus,
 ]
 
+/* Replacing a source changes the row counts AND everything computed from
+   them, so an upload invalidates the pipeline set as well as its own
+   summary -- otherwise the funnel and the backlog keep showing figures
+   derived from rows that no longer exist. */
+const UPLOAD_KEYS = [...PIPELINE_KEYS, queryKeys.dataSummary]
+
 function useInvalidating<TArgs, TData>(
   mutationFn: (args: TArgs) => Promise<TData>,
   keys: readonly (readonly string[])[],
@@ -78,6 +86,26 @@ function useInvalidating<TArgs, TData>(
     },
   })
 }
+
+/* Not polled: this only changes when someone on this screen uploads, and
+   the upload invalidates it directly. A 15s poll would be asking a question
+   whose answer only this tab can change. */
+export const useDataSummary = () =>
+  useQuery({ queryKey: queryKeys.dataSummary, queryFn: api.dataSummary })
+
+/** The commit half of an upload. The dry run is deliberately NOT a mutation
+    and NOT cached -- see UploadCard: it is run fresh against the file in
+    hand every time, because a stale impact count is worse than none. */
+export const useUploadData = () =>
+  useInvalidating(
+    ({ source, file }: { source: UploadSource; file: File }) =>
+      api.uploadData(source, file, false),
+    UPLOAD_KEYS,
+  )
+
+/** Reset touches every table, so it invalidates everything an upload does
+    -- the row counts, the backlog, the funnel and the audit trail. */
+export const useResetDemo = () => useInvalidating(() => api.resetDemo(), UPLOAD_KEYS)
 
 export const useReconcile = () =>
   useInvalidating(

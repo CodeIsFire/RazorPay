@@ -302,3 +302,54 @@ def test_gateway_rows_never_appear_as_business_days():
 def test_no_transactions_yields_no_days():
     from app.analytics import compute_daily_reconciliation
     assert compute_daily_reconciliation(_fresh_db()) == []
+
+
+def test_a_gateway_side_duplicate_does_not_hold_its_ledger_row_outstanding():
+    """The hero and the funnel must not disagree about the same row.
+
+    funnel.py splits causes deliberately: a 'duplicate' is gateway-side, and
+    its ledger row "matched fine" (see funnel.py's docstring) -- so the funnel
+    counts such a row as recovered once its own ledger-side exception is
+    resolved. compute_daily_reconciliation swept up *any* non-terminal
+    exception regardless of cause, so a still-open duplicate pinned the row as
+    outstanding and the Overview hero held money the funnel directly below it
+    had already released.
+
+    Observed live: LED-0043's failed_payment was confirmed processed by a real
+    RazorpayX webhook, its exception resolved, and Rs 5,439 stayed in the
+    outstanding total because a gateway-side duplicate was still open.
+    """
+    from app.analytics import compute_daily_reconciliation
+
+    conn = _fresh_db()
+    _txn(conn, ref="LED-1", amount=5_439)
+    # The ledger-side problem, recovered -- a payout was dispatched and confirmed.
+    _exc(conn, key="fp", cause="failed_payment", ledger_ref="LED-1",
+         amount=5_439, status="resolved")
+    # A surplus gateway row. Nothing to do with whether LED-1 itself settled.
+    _exc(conn, key="dup", cause="duplicate", ledger_ref="LED-1",
+         gateway_ref="PAY-9", amount=5_439, status="open")
+
+    day = compute_daily_reconciliation(conn)[0]
+    assert day["outstanding_paise"] == 0
+    assert day["reconciled_paise"] == 5_439
+
+
+def test_an_open_ledger_side_cause_still_holds_the_row_outstanding():
+    """The other half of the rule -- this is the case that must NOT change.
+
+    A timing_lag is ledger-side: the row genuinely has not settled, so
+    resolving some other exception on it does not release the money.
+    """
+    from app.analytics import compute_daily_reconciliation
+
+    conn = _fresh_db()
+    _txn(conn, ref="LED-2", amount=13_151)
+    _exc(conn, key="fp2", cause="failed_payment", ledger_ref="LED-2",
+         amount=13_151, status="resolved")
+    _exc(conn, key="lag", cause="timing_lag", ledger_ref="LED-2",
+         amount=13_151, status="pending")
+
+    day = compute_daily_reconciliation(conn)[0]
+    assert day["outstanding_paise"] == 13_151
+    assert day["reconciled_paise"] == 0

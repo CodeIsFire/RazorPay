@@ -1,5 +1,4 @@
-import { useEffect, useRef } from 'react'
-import { useFocusTrap, useScrollLock } from '@/hooks/useFocusTrap'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { fmtPaise } from '@/lib/format'
 import type { RoutePreview } from '@/lib/types'
 
@@ -15,7 +14,10 @@ import type { RoutePreview } from '@/lib/types'
    own decisions against a throwaway copy of the database, so this shows what
    will actually happen rather than a client-side guess -- the frontend cannot
    see the two inputs that matter most, an exception's age and whether a
-   previous attempt is still in flight. */
+   previous attempt is still in flight.
+
+   The dialog machinery (focus trap, scroll lock, Escape, focus on Cancel)
+   lives in ConfirmDialog, shared with the data-upload confirmation. */
 export function RouteConfirm({
   preview,
   loading,
@@ -31,101 +33,58 @@ export function RouteConfirm({
   onCancel: () => void
   confirming: boolean
 }) {
-  const dialogRef = useRef<HTMLDivElement>(null)
-  const cancelRef = useRef<HTMLButtonElement>(null)
-
-  // Focus lands on Cancel, not Dispatch: the safe choice should be the one a
-  // stray Return key picks.
-  useEffect(() => {
-    cancelRef.current?.focus()
-  }, [])
-
-  /* aria-modal only claims the page behind is inert. These make it true: Tab
-     cycles within the dialog instead of walking onto the dashboard underneath
-     while a confirmation about moving real money is still open, and the page
-     behind cannot be scrolled out from under it. */
-  useFocusTrap(dialogRef)
-  useScrollLock()
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCancel()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onCancel])
-
   const nothingToDo = preview !== null && preview.would_dispatch === 0
 
   return (
-    <div className="modal-scrim" onClick={onCancel}>
-      <div
-        ref={dialogRef}
-        className="modal"
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby="route-confirm-title"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="modal-title" id="route-confirm-title">
-          Dispatch payouts?
+    <ConfirmDialog
+      title="Dispatch payouts?"
+      titleId="route-confirm-title"
+      onConfirm={onConfirm}
+      onCancel={onCancel}
+      confirmDisabled={loading || confirming || error != null || nothingToDo}
+      confirmLabel={
+        confirming
+          ? 'Dispatching…'
+          : preview && preview.would_dispatch > 0
+            ? `Dispatch ${preview.would_dispatch} payout${preview.would_dispatch === 1 ? '' : 's'}`
+            : 'Dispatch payouts'
+      }
+    >
+      {loading && <div className="modal-body">Checking what this would dispatch…</div>}
+
+      {error != null && !loading && (
+        <div className="modal-body">
+          {/* Never offer to dispatch against an unknown backlog. */}
+          Couldn’t check what this would dispatch
+          {error instanceof Error ? `: ${error.message}` : '.'} Try again before running route.
         </div>
+      )}
 
-        {loading && <div className="modal-body">Checking what this would dispatch…</div>}
-
-        {error != null && !loading && (
-          <div className="modal-body">
-            {/* Never offer to dispatch against an unknown backlog. */}
-            Couldn’t check what this would dispatch
-            {error instanceof Error ? `: ${error.message}` : '.'} Try again before running route.
-          </div>
-        )}
-
-        {preview && !loading && error == null && (
-          <div className="modal-body">
-            {nothingToDo ? (
+      {preview && !loading && error == null && (
+        <div className="modal-body">
+          {nothingToDo ? (
+            <p>Nothing is eligible to dispatch right now. Running route would make no payouts.</p>
+          ) : (
+            <>
               <p>
-                Nothing is eligible to dispatch right now. Running route would make no payouts.
+                This dispatches <b>{preview.would_dispatch}</b>{' '}
+                payout{preview.would_dispatch === 1 ? '' : 's'} worth{' '}
+                <b>{fmtPaise(preview.value_paise)}</b> over the real RazorpayX Payouts API. It
+                can’t be undone from here.
               </p>
-            ) : (
-              <>
-                <p>
-                  This dispatches <b>{preview.would_dispatch}</b>{' '}
-                  payout{preview.would_dispatch === 1 ? '' : 's'} worth{' '}
-                  <b>{fmtPaise(preview.value_paise)}</b> over the real RazorpayX Payouts API.
-                  It can’t be undone from here.
-                </p>
-                <ul className="modal-list">
-                  <li>
-                    <b>{preview.would_skip}</b> held — already in flight, or waiting on
-                    independent evidence
-                  </li>
-                  <li>
-                    <b>{preview.would_abandon}</b> abandoned — past the retry or age limit
-                  </li>
-                </ul>
-              </>
-            )}
-          </div>
-        )}
-
-        <div className="modal-actions">
-          <button ref={cancelRef} className="btn" onClick={onCancel}>
-            Cancel
-          </button>
-          <button
-            className="btn btn-danger"
-            onClick={onConfirm}
-            disabled={loading || confirming || error != null || nothingToDo}
-          >
-            {confirming
-              ? 'Dispatching…'
-              : preview && preview.would_dispatch > 0
-                ? `Dispatch ${preview.would_dispatch} payout${preview.would_dispatch === 1 ? '' : 's'}`
-                : 'Dispatch payouts'}
-          </button>
+              <ul className="modal-list">
+                <li>
+                  <b>{preview.would_skip}</b> held — already in flight, or waiting on independent
+                  evidence
+                </li>
+                <li>
+                  <b>{preview.would_abandon}</b> abandoned — past the retry or age limit
+                </li>
+              </ul>
+            </>
+          )}
         </div>
-      </div>
-    </div>
+      )}
+    </ConfirmDialog>
   )
 }

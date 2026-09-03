@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { ChatPanel } from '@/components/chat/ChatPanel'
 import { AuditTab } from '@/components/audit/AuditTab'
+import { DataTab } from '@/components/data/DataTab'
+import { Landing } from '@/components/landing/Landing'
 import { ExceptionsTab } from '@/components/exceptions/ExceptionsTab'
 import { InsightsTab } from '@/components/insights/InsightsTab'
 import { OverviewTab } from '@/components/overview/OverviewTab'
@@ -9,7 +11,9 @@ import { SidebarNav } from '@/components/nav/SidebarNav'
 import { TabPanel } from '@/components/TabPanel'
 import { ToastProvider } from '@/components/Toast'
 import { TopBar } from '@/components/TopBar'
+import { UserCursor } from '@/components/cursor/UserCursor'
 import { useActiveTab } from '@/hooks/useActiveTab'
+import { useEntered } from '@/hooks/useEntered'
 import { useLenis } from '@/hooks/useLenis'
 import type { TabId } from '@/lib/labels'
 import type { Cause } from '@/lib/types'
@@ -39,6 +43,8 @@ function TabContent({
       return <InsightsTab onNavigate={onNavigate} />
     case 'audit':
       return <AuditTab query={query} />
+    case 'data':
+      return <DataTab />
   }
 }
 
@@ -94,9 +100,16 @@ function Dashboard() {
 }
 
 export default function App() {
+  /* Landing or dashboard, never both -- and never mounted together. That
+     matters beyond tidiness: Dashboard is what calls useActiveTab, so while
+     the landing is up no tab_view is reported to analytics and none of the
+     15s polls are running. Someone who never enters costs nothing. */
+  const entered = useEntered()
+
   return (
     <ToastProvider>
-      <Dashboard />
+      {entered ? <Dashboard /> : <Landing />}
+      <UserCursor />
     </ToastProvider>
   )
 }

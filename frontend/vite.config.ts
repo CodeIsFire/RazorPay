@@ -18,6 +18,7 @@ const API_ROUTES = [
   '/exceptions',
   '/actions',
   '/assistant',
+  '/data',
 ]
 
 export default defineConfig({

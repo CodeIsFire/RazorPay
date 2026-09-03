@@ -1,0 +1,158 @@
+{
+  "orphaned_at": "2026-09-03T10:01:43.821500Z",
+  "reason": "demo data refresh with new RR_FIXTURE_SEED_OFFSET (20260903 -> 20260904); new fixture amounts change the idempotency body, so these payouts can never re-bind",
+  "prior_seed_offset": "20260903",
+  "new_seed_offset": "20260904",
+  "payouts": [
+    {
+      "action_id": 540,
+      "payout_id": "pout_TXHJuoEFG6eqHJ",
+      "exception_key": "failed_payment:gateway:LED-0052:-",
+      "local_status": "processing",
+      "rzp_status": "processing",
+      "amount_paise": 4308500,
+      "reference_id": "failed_payment:gateway:LED-0052:-:attemp",
+      "created_utc": "2026-09-02T19:08:52Z"
+    },
+    {
+      "action_id": 541,
+      "payout_id": "pout_TXHJwsN5WmLKEi",
+      "exception_key": "failed_payment:gateway:LED-0053:-",
+      "local_status": "processing",
+      "rzp_status": "processing",
+      "amount_paise": 385500,
+      "reference_id": "failed_payment:gateway:LED-0053:-:attemp",
+      "created_utc": "2026-09-02T19:08:54Z"
+    },
+    {
+      "action_id": 542,
+      "payout_id": "pout_TXHJym0Wg9ifeH",
+      "exception_key": "failed_payment:gateway:LED-0054:-",
+      "local_status": "processing",
+      "rzp_status": "processing",
+      "amount_paise": 2361000,
+      "reference_id": "failed_payment:gateway:LED-0054:-:attemp",
+      "created_utc": "2026-09-02T19:08:55Z"
+    },
+    {
+      "action_id": 543,
+      "payout_id": "pout_TXHK0m4Vwjy2s5",
+      "exception_key": "failed_payment:gateway:LED-0055:-",
+      "local_status": "processing",
+      "rzp_status": "processing",
+      "amount_paise": 4500300,
+      "reference_id": "failed_payment:gateway:LED-0055:-:attemp",
+      "created_utc": "2026-09-02T19:08:57Z"
+    },
+    {
+      "action_id": 544,
+      "payout_id": "pout_TXHK2mab7erXEi",
+      "exception_key": "failed_payment:gateway:LED-0056:-",
+      "local_status": "processing",
+      "rzp_status": "processing",
+      "amount_paise": 3910800,
+      "reference_id": "failed_payment:gateway:LED-0056:-:attemp",
+      "created_utc": "2026-09-02T19:08:59Z"
+    },
+    {
+      "action_id": 545,
+      "payout_id": "pout_TXHK4q0efu13hS",
+      "exception_key": "failed_payment:gateway:LED-0057:-",
+      "local_status": "processing",
+      "rzp_status": "processing",
+      "amount_paise": 3660600,
+      "reference_id": "failed_payment:gateway:LED-0057:-:attemp",
+      "created_utc": "2026-09-02T19:09:01Z"
+    },
+    {
+      "action_id": 546,
+      "payout_id": "pout_TXHK6u5b8ijWc0",
+      "exception_key": "failed_payment:gateway:LED-0058:-",
+      "local_status": "processing",
+      "rzp_status": "processing",
+      "amount_paise": 4388900,
+      "reference_id": "failed_payment:gateway:LED-0058:-:attemp",
+      "created_utc": "2026-09-02T19:09:03Z"
+    },
+    {
+      "action_id": 547,
+      "payout_id": "pout_TXHK8oaVsmr354",
+      "exception_key": "failed_payment:gateway:LED-0059:-",
+      "local_status": "processing",
+      "rzp_status": "processing",
+      "amount_paise": 2184900,
+      "reference_id": "failed_payment:gateway:LED-0059:-:attemp",
+      "created_utc": "2026-09-02T19:09:05Z"
+    },
+    {
+      "action_id": 548,
+      "payout_id": "pout_TXHKAfRGStsqBI",
+      "exception_key": "failed_payment:gateway:LED-0060:-",
+      "local_status": "processing",
+      "rzp_status": "processing",
+      "amount_paise": 4899400,
+      "reference_id": "failed_payment:gateway:LED-0060:-:attemp",
+      "created_utc": "2026-09-02T19:09:06Z"
+    },
+    {
+      "action_id": 562,
+      "payout_id": "pout_TXHKDAFKLn1YhQ",
+      "exception_key": "failed_payment:bank_statement:LED-0013:-",
+      "local_status": "processed",
+      "rzp_status": "processed",
+      "amount_paise": 533800,
+      "reference_id": "failed_payment:bank_statement:LED-0013:-",
+      "created_utc": "2026-09-02T19:09:09Z"
+    },
+    {
+      "action_id": 569,
+      "payout_id": "pout_TXHKFdVKpCqnHx",
+      "exception_key": "failed_payment:bank_statement:LED-0037:-",
+      "local_status": "processed",
+      "rzp_status": "processed",
+      "amount_paise": 4029500,
+      "reference_id": "failed_payment:bank_statement:LED-0037:-",
+      "created_utc": "2026-09-02T19:09:11Z"
+    },
+    {
+      "action_id": 571,
+      "payout_id": "pout_TXHKHjUzEwKnKi",
+      "exception_key": "failed_payment:bank_statement:LED-0043:-",
+      "local_status": "processed",
+      "rzp_status": "processed",
+      "amount_paise": 543900,
+      "reference_id": "failed_payment:bank_statement:LED-0043:-",
+      "created_utc": "2026-09-02T19:09:13Z"
+    },
+    {
+      "action_id": 574,
+      "payout_id": "pout_TXHKJZUrTJHa21",
+      "exception_key": "failed_payment:bank_statement:LED-0050:-",
+      "local_status": "reversed",
+      "rzp_status": "reversed",
+      "amount_paise": 1315100,
+      "reference_id": "failed_payment:bank_statement:LED-0050:-",
+      "created_utc": "2026-09-02T19:09:15Z"
+    },
+    {
+      "action_id": 575,
+      "payout_id": "pout_TXHKLL77bxLuyH",
+      "exception_key": "failed_payment:bank_statement:LED-0053:-",
+      "local_status": "processed",
+      "rzp_status": "processed",
+      "amount_paise": 385500,
+      "reference_id": "failed_payment:bank_statement:LED-0053:-",
+      "created_utc": "2026-09-02T19:09:16Z"
+    },
+    {
+      "action_id": 585,
+      "payout_id": "pout_TXHQvaf421MoyB",
+      "exception_key": "failed_payment:bank_statement:LED-0050:-",
+      "local_status": "processed",
+      "rzp_status": "processed",
+      "amount_paise": 1315100,
+      "reference_id": "failed_payment:bank_statement:LED-0050:-",
+      "created_utc": "2026-09-02T19:15:30Z"
+    }
+  ]
+}

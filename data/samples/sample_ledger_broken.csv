@@ -1,0 +1,9 @@
+external_ref,amount_paise,occurred_at,counterparty,narration,fund_account_type,fund_account_name,fund_account_ifsc,fund_account_number,fund_account_vpa,contact_type,payout_purpose,payout_mode
+LED-3001,12500.00,2026-09-01T10:15:00+00:00,Acme Traders,Rupees with decimals,,,,,,,,
+LED-3002,875050,01/09/2026,Bharat Logistics,DD/MM/YYYY date,,,,,,,,
+LED-3003,,2026-09-01T14:05:00+00:00,Crimson Supplies,Missing amount,,,,,,,,
+LED-3004,560000,2026-09-01T09:20:00+00:00,Delta Freight,Bank account with no IFSC,bank_account,Delta Freight,,50100123456704,,vendor,vendor bill,NEFT
+LED-3005,430000,2026-09-01T12:30:00+00:00,Frontier Metals,Both shapes at once,bank_account,Frontier Metals,HDFC0001234,50100123456705,frontier@okhdfcbank,vendor,vendor bill,NEFT
+LED-3006,970000,2026-09-01T13:00:00+00:00,Ganges Chemicals,Account number but no type,,Ganges Chemicals,PUNB0003333,50100123456707,,vendor,vendor bill,NEFT
+LED-3007,615000,2026-09-01T14:00:00+00:00,Himalaya Textiles,Unknown payout mode,bank_account,Himalaya Textiles,BARB0004444,50100123456708,,vendor,vendor bill,SWIFT
+LED-3001,780000,2026-09-01T09:30:00+00:00,Lotus Printers,Duplicate of row 1,,,,,,,,

@@ -6,7 +6,8 @@ import sqlite3
 from contextlib import asynccontextmanager
 from typing import Optional
 
-from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile
+from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -15,8 +16,18 @@ from app.analytics import compute_daily_reconciliation, compute_exception_intell
 from app.assistant import build_messages, check_rate_limit
 from app.groq_client import GroqError, chat, injection_score
 from app.classify import classify_and_persist_from_db
+from app.demo import reset_demo_data
 from app.db import fetch_audit_log, fetch_exception_detail, fetch_exceptions, get_connection, init_db
 from app.funnel import compute_funnel
+from app.ingest import SOURCES as UPLOAD_SOURCES
+from app.ingest import (
+    IngestValidationError,
+    build_template,
+    parse_csv,
+    preview_replace,
+    summarize,
+)
+from app.ingest import replace as replace_source
 from app.live_executor import RazorpayXPayoutExecutor, RazorpayXPayoutStatusFetcher
 from app.reconcile import ACTUAL_SOURCES
 from app.router import (
@@ -397,6 +408,103 @@ async def razorpayx_webhook(request: Request, conn: sqlite3.Connection = Depends
         return handle_webhook(conn, payload)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+# --- User-uploaded data ----------------------------------------------------
+# The real-data counterpart to the fixture generator. scripts/load_demo_data.py
+# deliberately keeps fixture-seeding off the HTTP surface ("seeding fake data is
+# a dev-time concern") and that still holds -- these routes are not another way
+# to load fixtures, they are the path for data a user actually has.
+
+
+def _check_uploadable(source: str) -> None:
+    """'gateway' is RazorpayX's own record, sourced from the live API or
+    webhooks -- there is no file anyone holds for it, so it is not a 404
+    (the route exists) but a 400 (that source can't work this way)."""
+    if source not in UPLOAD_SOURCES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"source must be one of {UPLOAD_SOURCES}, got {source!r}",
+        )
+
+
+def _validation_response(errors: list) -> JSONResponse:
+    return JSONResponse(
+        status_code=422,
+        content={"detail": f"{len(errors)} problem(s) in the uploaded file",
+                 "errors": errors},
+    )
+
+
+@app.get("/data/templates/{source}")
+def get_upload_template(source: str) -> Response:
+    """The exact columns an upload of this source expects, so nobody has to
+    guess them -- generated from the same schema table the parser reads."""
+    _check_uploadable(source)
+    return Response(
+        content=build_template(source),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{source}_template.csv"'},
+    )
+
+
+@app.post("/demo/reset")
+def reset_demo(conn: sqlite3.Connection = Depends(get_db)) -> dict:
+    """Clear everything and reload the deterministic demo dataset, then
+    reconcile both actual sources.
+
+    Destructive by definition -- it deletes whatever was uploaded. The
+    dashboard confirms before calling this; see app/demo.py for why this is
+    an endpoint at all when scripts/load_demo_data.py deliberately is not."""
+    return reset_demo_data(conn)
+
+
+@app.get("/data/summary")
+def get_data_summary(conn: sqlite3.Connection = Depends(get_db)) -> dict:
+    return summarize(conn)
+
+
+@app.post("/data/upload/{source}")
+async def upload_data(source: str, dry_run: bool = False,
+                      file: UploadFile = File(...),
+                      conn: sqlite3.Connection = Depends(get_db)):
+    """Load a user's own ledger / bank statement CSV, replacing whatever
+    that source currently holds.
+
+    dry_run=true answers "what would this destroy" without destroying it,
+    and dry_run=false re-validates from scratch rather than trusting that
+    an earlier dry run described this same file -- nothing about the
+    preview is cached or carried over, because the only thing tying the
+    two calls together is the user's word that it's the same file.
+    """
+    _check_uploadable(source)
+
+    raw = await file.read()
+    if len(raw) > config.UPLOAD_MAX_BYTES:
+        # Read-then-measure rather than a streaming cap: at a 2MB ceiling
+        # the body is already in memory by the time any handler runs, so a
+        # streaming check would buy nothing an ASGI-level body limit
+        # wouldn't do better.
+        raise HTTPException(
+            status_code=413,
+            detail=f"file is larger than {config.UPLOAD_MAX_BYTES} bytes",
+        )
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError:
+        # A CSV saved as latin-1 out of an older accounting package is the
+        # user's problem to fix, and saying so beats a 500 to interpret.
+        return _validation_response(
+            [{"row_number": 0, "column": "", "message": "file must be UTF-8 encoded text"}])
+
+    try:
+        rows = parse_csv(source, text, max_rows=config.UPLOAD_MAX_ROWS)
+    except IngestValidationError as e:
+        return _validation_response(e.errors)
+
+    if dry_run:
+        return preview_replace(conn, source, rows)
+    return replace_source(conn, source, rows)
 
 
 class AssistantChatBody(BaseModel):

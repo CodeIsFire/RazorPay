@@ -1,6 +1,9 @@
 fastapi==0.115.0
 uvicorn[standard]==0.30.6
 pydantic==2.9.2
+# Multipart form parsing, for the CSV upload in app/ingest.py's endpoints.
+# FastAPI's UploadFile/File raise at import time without it.
+python-multipart==0.0.9
 python-dotenv==1.0.1
 httpx==0.27.2
 pytest==8.3.3

@@ -48,6 +48,12 @@ import sqlite3
 from datetime import datetime, timezone
 
 from app.config import MAX_EXCEPTION_AGE_DAYS
+# The one place the ledger-side/gateway-side split is defined. Imported rather
+# than restated so this module and the funnel can never disagree about whether
+# a given cause makes its ledger row outstanding -- they did, and the Overview
+# screen showed both answers at once. See the note in
+# compute_daily_reconciliation.
+from app.funnel import LEDGER_SIDE_CAUSES
 
 # Backlog, not history. Terminal rows are excluded everywhere in this module.
 NON_TERMINAL_STATUSES = ("open", "pending")
@@ -216,17 +222,27 @@ def compute_daily_reconciliation(conn: sqlite3.Connection) -> list[dict]:
     instant and would collapse this to a single column.
 
     A ledger row counts as outstanding when it is the subject of a
-    non-terminal exception. Gateway-side orphans ('unexplained') have no
+    non-terminal LEDGER-SIDE exception. The cause filter is load-bearing, not
+    a tidy-up: a gateway-side cause says something is wrong with the gateway's
+    record, not with whether this ledger row settled -- the ledger row in a
+    duplicate case matched fine (see app/funnel.py). Without the filter, a
+    still-open duplicate held its ledger row outstanding here while the funnel
+    counted the same row as recovered, and the Overview screen rendered both
+    answers at once: a confirmed payout resolved its exception and the money
+    never left the "unreconciled" total. Gateway-side orphans ('unexplained') have no
     ledger row and therefore no business day, so they are deliberately absent
     here -- they are counted by compute_exception_intelligence(), which is
     where the total value at risk lives. These two functions answer different
     questions and their totals are not meant to agree.
     """
     outstanding_refs: set[str] = set()
-    placeholders = ",".join("?" for _ in NON_TERMINAL_STATUSES)
+    status_placeholders = ",".join("?" for _ in NON_TERMINAL_STATUSES)
+    cause_placeholders = ",".join("?" for _ in LEDGER_SIDE_CAUSES)
     for row in conn.execute(
-        f"SELECT ledger_ref FROM exceptions WHERE status IN ({placeholders})",
-        NON_TERMINAL_STATUSES,
+        f"""SELECT ledger_ref FROM exceptions
+            WHERE status IN ({status_placeholders})
+              AND cause IN ({cause_placeholders})""",
+        (*NON_TERMINAL_STATUSES, *LEDGER_SIDE_CAUSES),
     ):
         # A batch exception holds every ledger row in the batch, so all of
         # them are outstanding -- not just the first, which is the one case

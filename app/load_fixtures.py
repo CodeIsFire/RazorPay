@@ -18,10 +18,10 @@ def load_transactions(conn: sqlite3.Connection, rows: list[dict]) -> None:
              fund_account_ifsc, fund_account_number, fund_account_vpa,
              contact_type, contact_email, contact_mobile, contact_address,
              contact_city, contact_zipcode, contact_state, notes,
-             raw_json)
+             origin, raw_json)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
                 ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                ?)
+                ?, ?)
         """,
         [
             (
@@ -41,7 +41,9 @@ def load_transactions(conn: sqlite3.Connection, rows: list[dict]) -> None:
                 r.get("contact_mobile"), r.get("contact_address"),
                 r.get("contact_city"), r.get("contact_zipcode"),
                 r.get("contact_state"), r.get("notes"),
-                r.get("raw_json"),
+                # Absent means generated: every fixture row and every
+                # hand-built test row predates this column.
+                r.get("origin", "generated"), r.get("raw_json"),
             )
             for r in rows
         ],

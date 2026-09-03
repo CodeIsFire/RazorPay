@@ -43,6 +43,7 @@ export const EVENT_LABELS: Record<string, string> = {
   payout_synced_from_api: 'Status synced from RazorpayX',
   payout_sync_failed: 'Status sync failed',
   webhook_received: 'Webhook received',
+  data_replaced: 'Data uploaded',
   webhook_unmatched: 'Webhook — no matching payout',
 }
 
@@ -71,15 +72,16 @@ export function statusPillClass(status: string): string {
   return 'pill-orange'
 }
 
-export type TabId = 'overview' | 'exceptions' | 'insights' | 'audit'
+export type TabId = 'overview' | 'exceptions' | 'insights' | 'audit' | 'data'
 
-export const TAB_IDS: TabId[] = ['overview', 'exceptions', 'insights', 'audit']
+export const TAB_IDS: TabId[] = ['overview', 'exceptions', 'insights', 'audit', 'data']
 
 export const TAB_TITLES: Record<TabId, string> = {
   overview: 'Overview',
   exceptions: 'Needs attention',
   insights: 'Insights',
   audit: 'Activity log',
+  data: 'Data',
 }
 
 /** Only the two tabs with a table get the search box; the others hide it

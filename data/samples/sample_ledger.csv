@@ -1,0 +1,13 @@
+external_ref,amount_paise,occurred_at,counterparty,narration,fund_account_type,fund_account_name,fund_account_ifsc,fund_account_number,fund_account_vpa,contact_type,contact_email,contact_mobile,payout_purpose,payout_mode
+LED-2001,1250000,2026-08-28T10:15:00+00:00,Acme Traders,Vendor payout August,bank_account,Acme Traders,HDFC0001234,50100123456701,,vendor,ap@acme.example,9000000001,vendor bill,NEFT
+LED-2002,875050,2026-08-28T11:40:00+00:00,Bharat Logistics,Freight settlement,bank_account,Bharat Logistics,ICIC0004321,50100123456702,,vendor,ap@bharat.example,9000000002,vendor bill,NEFT
+LED-2003,2400000,2026-08-28T14:05:00+00:00,Crimson Supplies,Bulk order payment,bank_account,Crimson Supplies,SBIN0009876,50100123456703,,vendor,ap@crimson.example,9000000003,vendor bill,RTGS
+LED-2004,560000,2026-08-29T09:20:00+00:00,Delta Freight,Transport charges,bank_account,Delta Freight,UTIB0001111,50100123456704,,vendor,ap@delta.example,9000000004,vendor bill,IMPS
+LED-2005,1890000,2026-08-29T10:00:00+00:00,Everest Packaging,Packaging invoice 4471,bank_account,Everest Packaging,KKBK0002222,50100123456705,,vendor,ap@everest.example,9000000005,vendor bill,NEFT
+LED-2006,430000,2026-08-29T12:30:00+00:00,Frontier Metals,Raw material advance,vpa,Frontier Metals,,,frontier@okhdfcbank,vendor,ap@frontier.example,9000000006,vendor bill,UPI
+LED-2007,970000,2026-08-30T09:45:00+00:00,Ganges Chemicals,Solvent supply,bank_account,Ganges Chemicals,PUNB0003333,50100123456707,,vendor,ap@ganges.example,9000000007,vendor bill,NEFT
+LED-2008,615000,2026-08-30T11:10:00+00:00,Himalaya Textiles,Fabric order,bank_account,Himalaya Textiles,BARB0004444,50100123456708,,vendor,ap@himalaya.example,9000000008,vendor bill,IMPS
+LED-2009,1100000,2026-08-30T15:25:00+00:00,Indus Hardware,Tooling purchase,bank_account,Indus Hardware,YESB0005555,50100123456709,,vendor,ap@indus.example,9000000009,vendor bill,NEFT
+LED-2010,325000,2026-08-31T10:05:00+00:00,Jupiter Electricals,Wiring contract,vpa,Jupiter Electricals,,,jupiter@okaxis,vendor,ap@jupiter.example,9000000010,vendor bill,UPI
+LED-2011,2050000,2026-08-31T13:50:00+00:00,Konkan Marine,Shipping charges,bank_account,Konkan Marine,IDFB0006666,50100123456711,,vendor,ap@konkan.example,9000000011,vendor bill,RTGS
+LED-2012,780000,2026-09-01T09:30:00+00:00,Lotus Printers,Catalogue printing,,,,,,,,,,

@@ -2,6 +2,17 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "backend",
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": [
+        "-c",
+        "cd /Users/aaditya/Desktop/RazorPay/recon-recover && exec env -u VIRTUAL_ENV -u __PYVENV_LAUNCHER__ -u PYTHONHOME PYTHONPATH=/Users/aaditya/Desktop/RazorPay/recon-recover/.venv/lib/python3.9/site-packages /Library/Developer/CommandLineTools/usr/bin/python3 -S -m uvicorn app.main:app --port 8000"
+      ],
+      "cwd": "/Users/aaditya/Desktop/RazorPay/recon-recover",
+      "port": 8000,
+      "autoPort": false
+    },
+    {
       "name": "frontend",
       "runtimeExecutable": "/Users/aaditya/.local/node/bin/npm",
       "runtimeArgs": ["run", "dev"],

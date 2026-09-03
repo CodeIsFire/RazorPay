@@ -174,6 +174,12 @@ def route_exception(conn: sqlite3.Connection, exception_row: dict, executor: Pay
     idempotency_key = f"{key}:attempt{attempt_number}"
 
     if action_type == "retry_payout":
+        refusal = _uploaded_on_live_key(conn, exception_row["ledger_ref"] or "")
+        if refusal:
+            log_audit(conn, actor="router", subject_type="exception", subject_id=key,
+                      event="action_skipped_uploaded_on_live_key", detail=refusal)
+            return {"decision": "skipped", "reason": refusal}
+
         try:
             # Where the money goes comes from the ledger row itself -- the
             # Tally payout columns on `transactions` -- so a live payout
@@ -252,6 +258,40 @@ def route_exception(conn: sqlite3.Connection, exception_row: dict, executor: Pay
         confirm_action(conn, cur.lastrowid, action_status)
 
     return {"decision": "dispatched", "action_type": action_type, "idempotency_key": idempotency_key}
+
+
+def _uploaded_on_live_key(conn: sqlite3.Connection, ledger_ref: str) -> str | None:
+    """Refuse to pay a CSV-supplied destination with production credentials.
+
+    The upload template accepts fund accounts, so a file someone pastes
+    together can name where money goes. Nothing authenticates this app, and
+    swapping rzp_test_ for rzp_live_ is a one-line .env edit -- so provenance
+    is the only thing left to check, and transactions.origin is what records
+    it.
+
+    Deliberately not overridable by configuration. The production path needs
+    IFSC validation, authentication and encryption at rest before it is a real
+    thing; an escape hatch now would let money move ahead of all three while
+    implying they had been considered.
+
+    Returns the reason to refuse, or None to proceed. Keyed on origin rather
+    than on the key alone so fixture rows keep dispatching in every mode.
+    """
+    if not config.RAZORPAYX_KEY_ID.startswith("rzp_live"):
+        return None
+
+    first_ref = (ledger_ref or "").split(",")[0].strip()
+    if not first_ref:
+        return None
+
+    row = conn.execute(
+        "SELECT origin FROM transactions WHERE source='ledger' AND external_ref=?",
+        (first_ref,),
+    ).fetchone()
+    if row is None or row["origin"] != "upload":
+        return None
+    return (f"ledger row {first_ref!r} came from an upload, and uploaded payout "
+            f"instructions are never dispatched on production keys")
 
 
 def _routable_rows(conn: sqlite3.Connection) -> list[sqlite3.Row]:

@@ -3,6 +3,8 @@ import type {
   ChatResponse,
   ChatTurn,
   DailyResponse,
+  DataSummary,
+  DemoResetResult,
   ExceptionDetail,
   ExceptionIntelligence,
   ExceptionsResponse,
@@ -12,6 +14,10 @@ import type {
   RoutePreview,
   RouteResult,
   SyncPayoutsResult,
+  UploadPreview,
+  UploadProblem,
+  UploadResult,
+  UploadSource,
 } from './types'
 
 /* Paths are relative on purpose: in production FastAPI serves this build from
@@ -32,6 +38,22 @@ export class ApiError extends Error {
     this.status = status
   }
 }
+
+/** A 422 from the upload endpoints, carrying the per-row problems the file
+    was rejected for. It extends ApiError so every existing catch that expects
+    one still works -- `detail` is the summary line, `problems` is the table.
+    Nothing else in the API answers this shape, which is why this is the only
+    error class with structure beyond a message. */
+export class UploadValidationError extends ApiError {
+  readonly problems: UploadProblem[]
+
+  constructor(detail: string, problems: UploadProblem[]) {
+    super(422, detail)
+    this.name = 'UploadValidationError'
+    this.problems = problems
+  }
+}
+
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, {
@@ -86,6 +108,32 @@ export const api = {
       `/exceptions/${encodeURIComponent(key)}/recheck`,
     ),
 
+
+  /** Downloaded by the browser directly, as a plain link -- the response is
+      an attachment, so there is nothing for fetch() to do with it. */
+  templateUrl: (source: UploadSource) => `/data/templates/${source}`,
+
+  dataSummary: () => request<DataSummary>('/data/summary'),
+
+  /** Clears everything and reloads the fixed demo dataset, reconciled.
+      Destructive -- the caller confirms first. */
+  resetDemo: () => post<DemoResetResult>('/demo/reset'),
+
+  /* Deliberately not routed through request(): that sets a JSON content-type
+     whenever there is a body, and a multipart POST must be left alone so the
+     browser can write its own boundary. */
+  uploadData: async (source: UploadSource, file: File, dryRun: boolean) => {
+    const body = new FormData()
+    body.append('file', file)
+    const res = await fetch(`/data/upload/${source}?dry_run=${dryRun}`, { method: 'POST', body })
+    const payload = await res.json().catch(() => ({}) as Record<string, unknown>)
+    if (res.ok) return payload as UploadPreview & UploadResult
+    const detail = typeof payload.detail === 'string' ? payload.detail : res.statusText
+    if (res.status === 422 && Array.isArray(payload.errors)) {
+      throw new UploadValidationError(detail, payload.errors as UploadProblem[])
+    }
+    throw new ApiError(res.status, detail)
+  },
 
   /** POST {message, history} -- the question and the transcript are separate
       fields, and the server re-validates and caps the history it is given. */

@@ -49,10 +49,33 @@ def get_connection() -> sqlite3.Connection:
     return conn
 
 
+# Columns added to an existing table after it was first created. schema.sql is
+# applied with CREATE TABLE IF NOT EXISTS, which is a no-op against a database
+# that already exists -- so a column added there reaches fresh databases only,
+# and every developer machine with real data silently lacks it until the first
+# query naming it fails with "no such column".
+#
+# Kept as a list rather than a migration framework because it is a list: the
+# schema is small, changes rarely, and SQLite's ALTER TABLE ADD COLUMN is the
+# one migration it does cheaply and safely.
+_ADDED_COLUMNS = (
+    ("transactions", "origin",
+     "TEXT NOT NULL DEFAULT 'generated' CHECK (origin IN ('generated', 'upload'))"),
+)
+
+
+def _apply_added_columns(conn: sqlite3.Connection) -> None:
+    for table, column, definition in _ADDED_COLUMNS:
+        existing = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
+        if column not in existing:
+            conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {definition}")
+
+
 def init_db() -> None:
     """Idempotent: safe to call on every app startup."""
     with get_connection() as conn:
         conn.executescript(SCHEMA_PATH.read_text())
+        _apply_added_columns(conn)
         conn.commit()
 
 

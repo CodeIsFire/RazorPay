@@ -76,6 +76,15 @@ CREATE TABLE IF NOT EXISTS transactions (
     contact_state       TEXT,
     notes               TEXT,
 
+    -- Where this row came from. Load-bearing for dispatch: a payout
+    -- instruction that arrived in a user's CSV is not the same as one the
+    -- fixture generator produced, and app/router.py refuses to dispatch an
+    -- 'upload' row on production credentials. Defaults to 'generated' so
+    -- every fixture row, and every row that predates this column, is
+    -- correctly classified without touching a single existing INSERT.
+    origin          TEXT NOT NULL DEFAULT 'generated'
+                    CHECK (origin IN ('generated', 'upload')),
+
     raw_json        TEXT,                    -- original row, verbatim, for debugging/audit
     created_at      TEXT NOT NULL DEFAULT (datetime('now'))
 );

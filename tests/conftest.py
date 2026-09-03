@@ -1,6 +1,20 @@
+import os
+
 import pytest
 
 from app import config
+
+# app.config's load_dotenv(override=True) pushes the developer's .env into
+# os.environ, and app.fixtures reads these two at *import* time to build its
+# RNG seeds and date anchor. A .env that pins a demo reseed -- so the demo
+# dataset survives a server restart -- would therefore silently reshape every
+# generated fixture, and the tests asserting exact case counts would stop
+# meaning what they meant (see app/fixtures.py on the defaults being the
+# historical values). Strip both before any test module imports app.fixtures,
+# so the suite always describes the canonical dataset. Same intent as
+# isolated_db blanking the RazorpayX credentials below.
+for _var in ("RR_FIXTURE_SEED_OFFSET", "RR_FIXTURE_ANCHOR"):
+    os.environ.pop(_var, None)
 
 
 @pytest.fixture
