@@ -320,6 +320,34 @@ filesystem is read-only outside `/tmp`, so `config.py` puts the database
 there — and `/tmp` can be empty on the next cold start. Point `RR_DB_PATH` at
 something durable for anything beyond a preview.
 
+⚠️ **Set `RR_API_TOKEN` on any deployment.** A deployed URL is reachable by
+anyone who finds it, and the state-changing endpoints — `/pipeline/route`,
+`/actions/{id}/confirm`, `/demo/reset`, `/data/upload/{source}`,
+`/assistant/chat` — move money, destroy data and spend metered API credit.
+`app/auth.py` puts them behind a bearer token:
+
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(32))"   # then set RR_API_TOKEN
+```
+
+Leaving it blank is only safe with no live RazorpayX credentials configured,
+which is the local and test case — the app can reach nothing but the mock
+executor there. Blank *with* live credentials present is refused outright
+(503 on those endpoints) rather than served open. `GET /integration/status`
+reports `api_token_configured` so you can confirm which state you are in.
+
+The dashboard sends the token from `localStorage['rr_api_token']`; there is no
+login UI, so seed it once in the browser console on a deployment that sets one:
+
+```js
+localStorage.setItem('rr_api_token', '<the same value as RR_API_TOKEN>')
+```
+
+Read-only endpoints are deliberately not behind the token — the dashboard
+fetches them on load, so a credential it would have to ship to every visitor
+would protect nothing. `/webhooks/razorpayx` is exempt too: RazorpayX signs
+its deliveries, and that HMAC check (`app/webhooks.py`) is its authentication.
+
 ## 10. Repo layout
 
 ```
@@ -331,6 +359,7 @@ app/
   reconcile.py          pure matcher: ledger vs one actual source
   classify.py           MatchResult → Exception_, one cause each
   router.py             cause → action, bounds, confirm/resolve/recheck
+  auth.py               bearer-token guard on the state-changing endpoints
   webhooks.py           HMAC verification, payout.processed/reversed
   funnel.py             ingested/matched/exceptions/recovered + invariant
   analytics.py          backlog by cause/age/counterparty

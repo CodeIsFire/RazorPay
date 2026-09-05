@@ -14,6 +14,7 @@ from pydantic import BaseModel
 from app import config
 from app.analytics import compute_daily_reconciliation, compute_exception_intelligence
 from app.assistant import build_messages, check_rate_limit
+from app.auth import live_credentials_configured, require_auth
 from app.groq_client import GroqError, chat, injection_score
 from app.classify import classify_and_persist_from_db
 from app.demo import reset_demo_data
@@ -186,7 +187,7 @@ def get_payout_executor():
     ACCOUNT_NUMBER are all configured -- with only a key_id/secret in
     .env (no account_number yet), this correctly stays on the mock rather
     than half-configuring something that would just fail every call."""
-    if config.RAZORPAYX_KEY_ID and config.RAZORPAYX_KEY_SECRET and config.RAZORPAYX_ACCOUNT_NUMBER:
+    if live_credentials_configured():
         return RazorpayXPayoutExecutor()
     return MockPayoutExecutor()
 
@@ -201,9 +202,7 @@ def integration_status(conn: sqlite3.Connection = Depends(get_db)) -> dict:
     """What's actually configured right now, without leaking secrets --
     useful for confirming which executor /pipeline/route will use before
     it does something with real (test-mode) money."""
-    live_ready = bool(
-        config.RAZORPAYX_KEY_ID and config.RAZORPAYX_KEY_SECRET and config.RAZORPAYX_ACCOUNT_NUMBER
-    )
+    live_ready = live_credentials_configured()
     # Payees are no longer provisioned out of band -- a ledger row carries
     # its own fund account, so the useful readiness signal is how many
     # ledger rows are actually dispatchable, not how many entries somebody
@@ -221,6 +220,11 @@ def integration_status(conn: sqlite3.Connection = Depends(get_db)) -> dict:
         "key_configured": bool(config.RAZORPAYX_KEY_ID),
         "account_number_configured": bool(config.RAZORPAYX_ACCOUNT_NUMBER),
         "webhook_secret_configured": bool(config.RAZORPAYX_WEBHOOK_SECRET),
+        # Whether the state-changing endpoints sit behind a bearer token
+        # (app/auth.py). False alongside executor "live" is the one
+        # combination that refuses those endpoints outright rather than
+        # serving them open.
+        "api_token_configured": bool(config.API_TOKEN),
         # bool() only, never the key -- the dashboard uses this to decide whether
         # the help button opens the assistant or falls back to its blurb.
         "assistant_configured": bool(config.GROQ_API_KEY),
@@ -229,7 +233,7 @@ def integration_status(conn: sqlite3.Connection = Depends(get_db)) -> dict:
     }
 
 
-@app.post("/pipeline/reconcile")
+@app.post("/pipeline/reconcile", dependencies=[Depends(require_auth)])
 def run_reconcile_pipeline(actual_source: str = "gateway",
                             conn: sqlite3.Connection = Depends(get_db)) -> dict:
     """Runs match -> classify -> persist against whatever is currently in
@@ -304,7 +308,7 @@ def get_exception_detail(exception_key: str, conn: sqlite3.Connection = Depends(
     return detail
 
 
-@app.post("/pipeline/sync-payouts")
+@app.post("/pipeline/sync-payouts", dependencies=[Depends(require_auth)])
 def run_payout_sync(conn: sqlite3.Connection = Depends(get_db)) -> dict:
     """Ask RazorpayX what actually happened to every payout still recorded as
     in flight, and apply any terminal answer.
@@ -319,7 +323,7 @@ def run_payout_sync(conn: sqlite3.Connection = Depends(get_db)) -> dict:
     return sync_payout_statuses(conn, RazorpayXPayoutStatusFetcher())
 
 
-@app.post("/pipeline/route")
+@app.post("/pipeline/route", dependencies=[Depends(require_auth)])
 def run_route_pipeline(conn: sqlite3.Connection = Depends(get_db)) -> dict:
     """Dispatches (at most) one action per still-open exception, bounded by
     retry/age limits. Safe to call repeatedly. Uses the live RazorpayX
@@ -342,7 +346,7 @@ class ConfirmActionBody(BaseModel):
     outcome: str  # 'processed' | 'reversed'
 
 
-@app.post("/actions/{action_id}/confirm")
+@app.post("/actions/{action_id}/confirm", dependencies=[Depends(require_auth)])
 def confirm_action_endpoint(action_id: int, body: ConfirmActionBody,
                              conn: sqlite3.Connection = Depends(get_db)) -> dict:
     """Manual stand-in for the payout.processed / payout.reversed webhook --
@@ -359,7 +363,7 @@ class ResolveExceptionBody(BaseModel):
     note: str = ""
 
 
-@app.post("/exceptions/{exception_key}/resolve")
+@app.post("/exceptions/{exception_key}/resolve", dependencies=[Depends(require_auth)])
 def resolve_exception_endpoint(exception_key: str, body: ResolveExceptionBody,
                                 conn: sqlite3.Connection = Depends(get_db)) -> dict:
     """Human-in-the-loop close-out for exceptions the router itself never
@@ -372,7 +376,7 @@ def resolve_exception_endpoint(exception_key: str, body: ResolveExceptionBody,
     return {"exception_key": exception_key, "status": "resolved"}
 
 
-@app.post("/exceptions/{exception_key}/recheck")
+@app.post("/exceptions/{exception_key}/recheck", dependencies=[Depends(require_auth)])
 def recheck_exception_endpoint(exception_key: str, conn: sqlite3.Connection = Depends(get_db)) -> dict:
     """Closes out a 'pending' exception (currently timing_lag only) once
     its evidence is reaffirmed -- see router.recheck_exception."""
@@ -448,7 +452,7 @@ def get_upload_template(source: str) -> Response:
     )
 
 
-@app.post("/demo/reset")
+@app.post("/demo/reset", dependencies=[Depends(require_auth)])
 def reset_demo(conn: sqlite3.Connection = Depends(get_db)) -> dict:
     """Clear everything and reload the deterministic demo dataset, then
     reconcile both actual sources.
@@ -464,7 +468,7 @@ def get_data_summary(conn: sqlite3.Connection = Depends(get_db)) -> dict:
     return summarize(conn)
 
 
-@app.post("/data/upload/{source}")
+@app.post("/data/upload/{source}", dependencies=[Depends(require_auth)])
 async def upload_data(source: str, dry_run: bool = False,
                       file: UploadFile = File(...),
                       conn: sqlite3.Connection = Depends(get_db)):
@@ -512,7 +516,7 @@ class AssistantChatBody(BaseModel):
     history: list = []  # [{"role": "user"|"assistant", "content": str}], newest last
 
 
-@app.post("/assistant/chat")
+@app.post("/assistant/chat", dependencies=[Depends(require_auth)])
 def assistant_chat(body: AssistantChatBody, request: Request,
                    conn: sqlite3.Connection = Depends(get_db)) -> dict:
     """Server-side proxy to Groq for the dashboard's help assistant.

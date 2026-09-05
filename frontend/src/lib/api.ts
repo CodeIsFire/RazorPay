@@ -55,12 +55,34 @@ export class UploadValidationError extends ApiError {
 }
 
 
+/* The operator's bearer token for the state-changing endpoints, which the
+   backend guards once RR_API_TOKEN is set (app/auth.py). Read per request
+   rather than captured at module load, so pasting one in from the console
+   takes effect on the next click instead of on a reload.
+
+   localStorage and not the bundle: a token compiled into this build would
+   ship to every visitor, which is not a credential. There is no UI for it
+   because there is no login here to hang one off -- a deployment that sets
+   RR_API_TOKEN seeds this the way it would any other operator-only setting.
+   The read is wrapped because Safari's private mode throws on access rather
+   than returning null. */
+const AUTH_TOKEN_KEY = 'rr_api_token'
+
+function authHeader(): Record<string, string> {
+  try {
+    const token = localStorage.getItem(AUTH_TOKEN_KEY)
+    return token ? { Authorization: `Bearer ${token}` } : {}
+  } catch {
+    return {}
+  }
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, {
     ...init,
     headers: init?.body
-      ? { 'Content-Type': 'application/json', ...init?.headers }
-      : init?.headers,
+      ? { 'Content-Type': 'application/json', ...authHeader(), ...init?.headers }
+      : { ...authHeader(), ...init?.headers },
   })
   if (!res.ok) {
     const detail = await res
@@ -121,11 +143,16 @@ export const api = {
 
   /* Deliberately not routed through request(): that sets a JSON content-type
      whenever there is a body, and a multipart POST must be left alone so the
-     browser can write its own boundary. */
+     browser can write its own boundary. It still needs the bearer token --
+     /data/upload replaces a whole source, and app/auth.py guards it. */
   uploadData: async (source: UploadSource, file: File, dryRun: boolean) => {
     const body = new FormData()
     body.append('file', file)
-    const res = await fetch(`/data/upload/${source}?dry_run=${dryRun}`, { method: 'POST', body })
+    const res = await fetch(`/data/upload/${source}?dry_run=${dryRun}`, {
+      method: 'POST',
+      body,
+      headers: authHeader(),
+    })
     const payload = await res.json().catch(() => ({}) as Record<string, unknown>)
     if (res.ok) return payload as UploadPreview & UploadResult
     const detail = typeof payload.detail === 'string' ? payload.detail : res.statusText

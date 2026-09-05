@@ -71,6 +71,14 @@ RAZORPAYX_ACCOUNT_NUMBER = os.getenv("RAZORPAYX_ACCOUNT_NUMBER", "")
 RAZORPAYX_WEBHOOK_SECRET = os.getenv("RAZORPAYX_WEBHOOK_SECRET", "")
 RAZORPAYX_PAYOUT_MODE = os.getenv("RAZORPAYX_PAYOUT_MODE", "IMPS")  # NEFT | RTGS | IMPS
 
+# Shared bearer token guarding every state-changing endpoint (app/auth.py).
+# Blank means "no token configured", which is the right default for the test
+# suite and a local checkout and the wrong one for anything reachable from the
+# internet -- so app/auth.py refuses to serve those endpoints at all, rather
+# than serving them open, once live RazorpayX credentials are present. See
+# require_auth() for why that pairing is the trigger and not a separate flag.
+API_TOKEN = os.getenv("RR_API_TOKEN", "")
+
 # RAZORPAYX_FUND_ACCOUNT_MAP_PATH used to live here: a ledger_ref ->
 # fund_account_id side-car, needed back when the synthetic ledger had no
 # bank details of its own. `transactions` now carries the RazorpayX Tally

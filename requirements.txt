@@ -1,9 +1,22 @@
-fastapi==0.115.0
+# Security note on the pinned ranges below: this project runs on Python 3.9
+# locally and on Vercel's Python 3.12 runtime. Several advisories are only
+# fixed in releases that require >=3.10, so the runtime deps carrying them are
+# split by marker -- production gets the fully patched release, local dev gets
+# the newest one 3.9 can install. Drop the markers once local Python is >=3.10.
+fastapi==0.128.8
 uvicorn[standard]==0.30.6
 pydantic==2.9.2
 # Multipart form parsing, for the CSV upload in app/ingest.py's endpoints.
 # FastAPI's UploadFile/File raise at import time without it.
-python-multipart==0.0.9
-python-dotenv==1.0.1
+# 0.0.9 carried 8 advisories reachable from the (unauthenticated) upload
+# endpoint, incl. arbitrary file write (GHSA-wp53-j4wj-2cfg, fixed 0.0.22)
+# and several parser DoS vectors (through 0.0.31).
+python-multipart==0.0.20; python_version < "3.10"
+python-multipart==0.0.31; python_version >= "3.10"
+# 1.0.1 allowed arbitrary file overwrite via symlink following in set_key
+# (GHSA-mf9w-mj56-hr94, fixed 1.2.2).
+python-dotenv==1.0.1; python_version < "3.10"
+python-dotenv==1.2.2; python_version >= "3.10"
 httpx==0.27.2
-pytest==8.3.3
+pytest==8.4.2; python_version < "3.10"
+pytest==9.0.3; python_version >= "3.10"
